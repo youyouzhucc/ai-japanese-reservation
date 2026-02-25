@@ -1,8 +1,6 @@
 const API = "";
 
 function applyI18n() {
-  currentLang = document.getElementById("langSelect").value;
-  setLang(currentLang);
   document.getElementById("pageTitle").textContent = "🍣 " + t("title");
   document.getElementById("pageSubtitle").textContent = t("subtitle");
   document.querySelectorAll("[data-i18n]").forEach((el) => {
@@ -18,9 +16,6 @@ function applyI18n() {
   document.getElementById("submitBtn").textContent = t("submit");
   document.getElementById("checkStatusBtn").textContent = t("refreshStatus");
 }
-
-document.getElementById("langSelect").value = currentLang;
-document.getElementById("langSelect").addEventListener("change", applyI18n);
 
 function initReservationForm() {
   applyI18n();

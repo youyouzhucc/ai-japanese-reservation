@@ -64,48 +64,44 @@
         <div class="field field-datetime-row">
           <div class="label-row"><label data-i18n="firstPreference">第一希望预约日期、时间</label><span class="required">*</span></div>
           <div class="datetime-inputs">
-            <div class="date-picker-wrap" id="openDatePicker">
+            <div class="date-picker-wrap">
               <input type="text" id="reservation_date" required readonly data-placeholder="datePlaceholder">
-              <span class="date-icon">📅</span>
+              <button type="button" class="date-picker-btn date-picker-btn-overlay" id="openDatePicker" aria-label="选择日期"><span class="date-icon">📅</span></button>
             </div>
-            <div class="time-input-wrap" id="reservationTimeWrap">
-              <select id="reservation_hour" required>
-                <option value="">时</option>
-              </select>
+            <div class="time-input-wrap">
+              <div class="custom-select" id="reservation_hour_wrap" data-value="">
+                <span class="custom-select-label empty">时</span>
+                <span class="custom-select-arrow">▼</span>
+              </div>
+              <input type="hidden" id="reservation_hour" name="reservation_hour" required>
               <span class="time-sep">:</span>
-              <select id="reservation_minute" required>
-                <option value="">分</option>
-                <option value="00">00</option>
-                <option value="10">10</option>
-                <option value="20">20</option>
-                <option value="30">30</option>
-                <option value="40">40</option>
-                <option value="50">50</option>
-              </select>
+              <div class="custom-select" id="reservation_minute_wrap" data-value="">
+                <span class="custom-select-label empty">分</span>
+                <span class="custom-select-arrow">▼</span>
+              </div>
+              <input type="hidden" id="reservation_minute" name="reservation_minute" required>
             </div>
           </div>
         </div>
         <div class="field field-datetime-row">
           <div class="label-row"><label data-i18n="secondPreference">第二希望预约日期、时间</label></div>
           <div class="datetime-inputs">
-            <div class="date-picker-wrap" id="openDatePicker2">
+            <div class="date-picker-wrap">
               <input type="text" id="second_date" readonly data-placeholder="datePlaceholder">
-              <span class="date-icon">📅</span>
+              <button type="button" class="date-picker-btn date-picker-btn-overlay" id="openDatePicker2" aria-label="选择日期"><span class="date-icon">📅</span></button>
             </div>
             <div class="time-input-wrap">
-              <select id="second_hour">
-                <option value="">时</option>
-              </select>
+              <div class="custom-select" id="second_hour_wrap" data-value="">
+                <span class="custom-select-label empty">时</span>
+                <span class="custom-select-arrow">▼</span>
+              </div>
+              <input type="hidden" id="second_hour" name="second_hour">
               <span class="time-sep">:</span>
-              <select id="second_minute">
-                <option value="">分</option>
-                <option value="00">00</option>
-                <option value="10">10</option>
-                <option value="20">20</option>
-                <option value="30">30</option>
-                <option value="40">40</option>
-                <option value="50">50</option>
-              </select>
+              <div class="custom-select" id="second_minute_wrap" data-value="">
+                <span class="custom-select-label empty">分</span>
+                <span class="custom-select-arrow">▼</span>
+              </div>
+              <input type="hidden" id="second_minute" name="second_minute">
             </div>
           </div>
         </div>
@@ -143,6 +139,7 @@
   </div>
   </main>
 
+  <div id="timeSelectPopup" class="time-select-popup hidden"></div>
   <div id="datePickerPopup" class="date-picker-popup hidden">
     <div class="date-picker-header">
       <button type="button" class="date-nav" id="prevMonth">‹</button>

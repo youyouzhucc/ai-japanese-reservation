@@ -6,35 +6,27 @@
   margin-bottom: 1.5rem;
   background: #f5f0eb;
 }
-.form-header-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-.form-title-block {
-  flex: 1;
-  min-width: 0;
-}
-.lang-select-wrap {
+.lang-bar {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
+  padding: 0.6rem 2rem;
+  background: #8b2635;
   gap: 0.5rem;
-  flex-shrink: 0;
+  margin: 0 -2rem 0 -2rem;
 }
 .lang-label {
-  font-size: 0.9rem;
-  color: #495057;
+  color: #fff;
   font-weight: 600;
+  font-size: 0.9rem;
   white-space: nowrap;
 }
 .lang-select {
   padding: 0.4rem 0.8rem;
-  border: 1px solid #dee2e6;
+  border: none;
   border-radius: 6px;
-  background: #fff;
-  color: #333;
+  background: #c45c6a;
+  color: #fff;
   font-size: 0.9rem;
   cursor: pointer;
   min-width: 120px;

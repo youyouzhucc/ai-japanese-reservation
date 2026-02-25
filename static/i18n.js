@@ -44,6 +44,7 @@ const LANG = {
     exampleAreaCode: "+86",
     exampleNumber: "138-0000-0000",
     datePlaceholder: "点击选择日期",
+    selectLanguage: "选择语言",
   },
   "zh-TW": {
     title: "日本餐廳預訂服務",
@@ -90,6 +91,7 @@ const LANG = {
     exampleAreaCode: "+86",
     exampleNumber: "138-0000-0000",
     datePlaceholder: "點擊選擇日期",
+    selectLanguage: "選擇語言",
   },
   en: {
     title: "Japanese Restaurant Reservation",
@@ -136,6 +138,7 @@ const LANG = {
     exampleAreaCode: "+86",
     exampleNumber: "138-0000-0000",
     datePlaceholder: "Click to select date",
+    selectLanguage: "Select Language",
   },
   ja: {
     title: "日本レストラン予約",
@@ -182,6 +185,7 @@ const LANG = {
     exampleAreaCode: "+86",
     exampleNumber: "138-0000-0000",
     datePlaceholder: "日付を選択",
+    selectLanguage: "言語を選択",
   },
   ko: {
     title: "일본 레스토랑 예약",
@@ -228,6 +232,7 @@ const LANG = {
     exampleAreaCode: "+82",
     exampleNumber: "10-0000-0000",
     datePlaceholder: "날짜 선택",
+    selectLanguage: "언어 선택",
   },
 };
 

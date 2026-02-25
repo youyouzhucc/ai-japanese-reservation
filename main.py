@@ -7,9 +7,9 @@ import uuid
 from datetime import datetime
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, Request
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, PlainTextResponse
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -30,6 +30,7 @@ from config import settings
 from models import Reservation, ReservationStatus, get_engine, get_session_maker, init_db
 from schemas import ReservationCreate, ReservationResponse, PaymentRequest, PaymentResponse, CallbackRequest, ReservationStatusUpdate
 from services import create_payment, initiate_call, send_reservation_sms
+from services.payment import verify_alipay_notify
 
 engine = get_engine(settings.database_url)
 SessionLocal = get_session_maker(engine)
@@ -89,7 +90,7 @@ async def create_reservation(data: ReservationCreate, db=Depends(get_db)):
 
 @app.post("/api/pay", response_model=PaymentResponse)
 async def pay(req: PaymentRequest, db=Depends(get_db)):
-    """② 支付并触发 AI 电话"""
+    """② 创建支付订单。模拟模式直接成功并触发 AI 电话；支付宝模式返回二维码，等 notify 回调后触发"""
     from sqlalchemy import select
     result = await db.execute(select(Reservation).where(Reservation.order_no == req.order_no))
     r = result.scalar_one_or_none()
@@ -98,18 +99,27 @@ async def pay(req: PaymentRequest, db=Depends(get_db)):
     if r.status != ReservationStatus.PENDING.value:
         raise HTTPException(400, f"订单状态不可支付: {r.status}")
 
-    pay_result = await create_payment(req.order_no, req.amount_cents or 100)
+    subject = f"AI日语预约-{r.restaurant_name}"
+    pay_result = await create_payment(req.order_no, req.amount_cents or 100, subject)
     if not pay_result["success"]:
         raise HTTPException(400, pay_result["message"])
 
     r.payment_id = pay_result["payment_id"]
     r.amount_cents = req.amount_cents or 100
-    r.status = ReservationStatus.RESERVING.value
     await db.commit()
 
-    # ③ 异步发起 AI 电话
-    asyncio.create_task(_run_ai_call_and_notify(r.id))
-    return PaymentResponse(**pay_result)
+    # 模拟模式：直接触发 AI 电话；支付宝：等 /api/alipay/notify 回调
+    if settings.payment_mode == "mock":
+        r.status = ReservationStatus.RESERVING.value
+        await db.commit()
+        asyncio.create_task(_run_ai_call_and_notify(r.id))
+
+    return PaymentResponse(
+        success=pay_result["success"],
+        payment_id=pay_result["payment_id"],
+        qr_code=pay_result.get("qr_code", ""),
+        message=pay_result["message"],
+    )
 
 
 async def _run_ai_call_and_notify(reservation_id: int):
@@ -161,6 +171,30 @@ async def _run_ai_call_and_notify(reservation_id: int):
                 r.status = ReservationStatus.FAILED.value
                 r.ai_call_result = f"系统异常: {e}"
                 await db.commit()
+
+
+@app.post("/api/alipay/notify")
+async def alipay_notify(request: Request, db=Depends(get_db)):
+    """支付宝当面付异步通知回调。支付成功后更新状态并触发 AI 电话"""
+    from sqlalchemy import select
+    body = await request.body()
+    # 支付宝发送 application/x-www-form-urlencoded
+    from urllib.parse import parse_qs
+    data = {k: v[0] if isinstance(v, list) else v for k, v in parse_qs(body.decode()).items()}
+    if not data:
+        return PlainTextResponse("fail")
+    ok, order_no = verify_alipay_notify(dict(data))
+    if not ok or not order_no:
+        return PlainTextResponse("fail")
+    result = await db.execute(select(Reservation).where(Reservation.order_no == order_no))
+    r = result.scalar_one_or_none()
+    if not r or r.status != ReservationStatus.PENDING.value:
+        return PlainTextResponse("success")
+    r.status = ReservationStatus.RESERVING.value
+    r.payment_id = data.get("trade_no", r.payment_id)
+    await db.commit()
+    asyncio.create_task(_run_ai_call_and_notify(r.id))
+    return PlainTextResponse("success")
 
 
 @app.post("/api/callback/call")

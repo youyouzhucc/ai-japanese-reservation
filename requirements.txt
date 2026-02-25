@@ -12,6 +12,9 @@ httpx==0.26.0
 # Railway PostgreSQL 支持
 asyncpg==0.29.0
 
+# 支付宝当面付
+python-alipay-sdk==3.4.0
+
 # 可选：真实 AI 电话 & 短信
 # twilio==8.11.0
 # openai==1.12.0

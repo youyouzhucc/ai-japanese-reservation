@@ -48,6 +48,7 @@ class PaymentResponse(BaseModel):
     """支付响应"""
     success: bool
     payment_id: str
+    qr_code: str = ""
     message: str
 
 

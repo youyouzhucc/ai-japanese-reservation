@@ -14,6 +14,12 @@ class Settings(BaseSettings):
             return v.replace("postgresql://", "postgresql+asyncpg://", 1)
         return v
     payment_mode: str = "mock"
+    # 支付宝当面付
+    alipay_app_id: str = ""
+    alipay_private_key: str = ""
+    alipay_public_key: str = ""
+    alipay_notify_url: str = ""
+    alipay_sandbox: bool = False
     twilio_account_sid: str = ""
     twilio_auth_token: str = ""
     twilio_phone_number: str = ""

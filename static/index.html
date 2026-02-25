@@ -8,6 +8,16 @@
 </head>
 <body>
   <header class="page-header">
+    <div class="lang-bar">
+      <span class="lang-label">JP</span>
+      <select id="langSelect" class="lang-select">
+        <option value="zh-CN">简体中文</option>
+        <option value="zh-TW">繁體中文</option>
+        <option value="en">English</option>
+        <option value="ja">日本語</option>
+        <option value="ko">한국어</option>
+      </select>
+    </div>
     <div class="banner">
       <div class="banner-track">
         <div class="banner-slide"><img src="/static/images/banner-1.png" alt="寿司"></div>
@@ -20,81 +30,126 @@
   <main class="page-content">
   <div class="container">
     <header class="form-header">
-      <h1>🍣 日本餐厅预订服务</h1>
-      <p>填写预约信息，AI 将自动致电餐厅完成日语预约</p>
+      <h1 id="pageTitle">🍣 日本餐厅预订服务</h1>
+      <p id="pageSubtitle">填写预约信息，AI 将自动致电餐厅完成日语预约</p>
     </header>
 
     <form id="reservationForm" class="form">
       <section>
-        <h2>餐厅信息</h2>
+        <h2 data-i18n="restaurant">餐厅信息</h2>
         <div class="field">
-          <label for="restaurant_name">餐厅名称 <span class="required">*</span></label>
-          <input type="text" id="restaurant_name" required placeholder="例：銀座 すし 太郎">
+          <label for="restaurant_name" data-i18n="restaurantName">餐厅名称</label> <span class="required">*</span>
+          <input type="text" id="restaurant_name" required data-placeholder="exampleRestaurant">
         </div>
         <div class="field">
-          <label for="restaurant_phone">餐厅电话 <span class="required">*</span></label>
-          <input type="tel" id="restaurant_phone" required placeholder="例：+81-3-1234-5678">
-        </div>
-      </section>
-
-      <section>
-        <h2>预约信息</h2>
-        <div class="field">
-          <label for="guest_name">预约人姓名 <span class="required">*</span></label>
-          <input type="text" id="guest_name" required placeholder="中文或英文">
-        </div>
-        <div class="field">
-          <label for="guest_phone">预约人电话 <span class="required">*</span></label>
-          <input type="tel" id="guest_phone" required placeholder="含区号，例：+86-138-0000-0000">
+          <label for="restaurant_phone" data-i18n="restaurantPhone">餐厅电话</label> <span class="required">*</span>
+          <input type="tel" id="restaurant_phone" required data-placeholder="examplePhone">
         </div>
       </section>
 
       <section>
-        <h2>预约详情</h2>
+        <h2 data-i18n="reservation">预约信息</h2>
         <div class="field">
-          <label>预约时间 <span class="required">*</span></label>
-          <div class="row">
+          <label for="guest_name" data-i18n="guestName">预约人姓名</label> <span class="required">*</span>
+          <input type="text" id="guest_name" required data-placeholder="exampleGuest">
+        </div>
+        <div class="field">
+          <label data-i18n="guestPhone">预约人电话</label> <span class="required">*</span>
+          <div class="row phone-row">
             <div class="field">
-              <label for="reservation_date" class="field-sublabel">日期</label>
-              <input type="date" id="reservation_date" required>
+              <label for="guest_phone_prefix" class="field-sublabel" data-i18n="areaCode">区号</label>
+              <input type="text" id="guest_phone_prefix" required placeholder="+86" maxlength="6">
             </div>
             <div class="field">
-              <label for="reservation_time" class="field-sublabel">时间</label>
-              <input type="time" id="reservation_time" required step="600">
+              <label for="guest_phone_number" class="field-sublabel" data-i18n="phoneNumber">号码</label>
+              <input type="tel" id="guest_phone_number" required placeholder="138-0000-0000">
             </div>
           </div>
-          <small>时间为十分钟整点（如 18:00、18:10、18:20）</small>
+        </div>
+      </section>
+
+      <section>
+        <h2 data-i18n="reservationDetail">预约详情</h2>
+        <p class="busy-note" data-i18n="busyTimeNote">※ 12:30 为繁忙时段，恕不接受预约。</p>
+        <div class="field">
+          <label data-i18n="reservationDate">预约日期</label> <span class="required">*</span>
+          <div class="date-picker-wrap">
+            <input type="text" id="reservation_date" required readonly data-placeholder="datePlaceholder">
+            <button type="button" class="date-picker-btn" id="openDatePicker" title="选择日期">📅</button>
+            <div id="datePickerPopup" class="date-picker-popup hidden">
+              <div class="date-picker-header">
+                <button type="button" class="date-nav" id="prevMonth">‹</button>
+                <span id="datePickerMonth">2025年1月</span>
+                <button type="button" class="date-nav" id="nextMonth">›</button>
+              </div>
+              <div class="date-picker-weekdays">
+                <span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span>
+              </div>
+              <div id="datePickerDays" class="date-picker-days"></div>
+            </div>
+          </div>
+        </div>
+        <div class="field">
+          <label for="reservation_time" data-i18n="reservationTime">预约时间</label> <span class="required">*</span>
+          <input type="time" id="reservation_time" required step="600">
+          <small data-i18n="timeHint">时间为十分钟整点（如 18:00、18:10、18:20）</small>
+        </div>
+        <div class="field checkbox-field">
+          <label data-i18n="timeAdjustable">若首选时间不可用，是否可调整其他时间？</label>
+          <div class="checkbox-row">
+            <label class="radio-label"><input type="radio" name="time_adjustable" value="yes" checked> <span data-i18n="timeAdjustableYes">可以</span></label>
+            <label class="radio-label"><input type="radio" name="time_adjustable" value="no"> <span data-i18n="timeAdjustableNo">不可以</span></label>
+          </div>
+        </div>
+        <div class="field">
+          <label data-i18n="secondPreference">第二希望预约日期、时间</label>
+          <div class="row">
+            <div class="field">
+              <label for="second_date" class="field-sublabel" data-i18n="secondDate">日期</label>
+              <input type="date" id="second_date">
+            </div>
+            <div class="field">
+              <label for="second_time" class="field-sublabel" data-i18n="secondTime">时间</label>
+              <input type="time" id="second_time" step="600">
+            </div>
+          </div>
         </div>
         <div class="row">
           <div class="field">
-            <label for="adults">成人人数 <span class="required">*</span></label>
+            <label for="adults" data-i18n="adults">成人人数</label> <span class="required">*</span>
             <input type="number" id="adults" value="1" min="1" max="20" required>
           </div>
           <div class="field">
-            <label for="children">儿童人数 <span class="required">*</span></label>
+            <label for="children" data-i18n="children">儿童人数</label> <span class="required">*</span>
             <input type="number" id="children" value="0" min="0" max="20" required>
           </div>
         </div>
         <div class="field">
-          <label for="notes">预约备注</label>
-          <textarea id="notes" rows="3" placeholder="特殊需求、忌口等"></textarea>
+          <label for="dietary_notes" data-i18n="dietaryNotes">饮食注意事项</label>
+          <textarea id="dietary_notes" rows="3" data-placeholder="dietaryPlaceholder"></textarea>
+          <small>请详细填写过敏食材、忌口、宗教饮食限制等</small>
+        </div>
+        <div class="field">
+          <label for="notes" data-i18n="notes">预约备注</label>
+          <textarea id="notes" rows="2" data-placeholder="notesPlaceholder"></textarea>
         </div>
       </section>
 
       <div class="actions">
-        <button type="submit" id="submitBtn">提交预约</button>
+        <button type="submit" id="submitBtn" data-i18n="submit">提交预约</button>
       </div>
     </form>
 
     <div id="result" class="result hidden">
-      <h3>预约单据</h3>
+      <h3 data-i18n="orderTitle">预约单据</h3>
       <div id="orderInfo"></div>
       <p id="statusMsg"></p>
-      <button id="checkStatusBtn" class="secondary">刷新状态</button>
+      <button id="checkStatusBtn" class="secondary" data-i18n="refreshStatus">刷新状态</button>
     </div>
   </div>
   </main>
 
+  <script src="/static/i18n.js"></script>
   <script src="/static/app.js"></script>
 </body>
 </html>

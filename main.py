@@ -11,6 +11,8 @@ from fastapi import FastAPI, HTTPException, Depends
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 
+BASE_DIR = Path(__file__).resolve().parent
+
 from config import settings
 from models import Reservation, ReservationStatus, get_engine, get_session_maker, init_db
 from schemas import ReservationCreate, ReservationResponse, PaymentRequest, PaymentResponse, CallbackRequest
@@ -171,9 +173,6 @@ async def list_reservations(skip: int = 0, limit: int = 50, db=Depends(get_db)):
 
 # 静态文件
 app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
-
-
-BASE_DIR = Path(__file__).resolve().parent
 
 
 @app.get("/")

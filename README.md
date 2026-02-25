@@ -40,6 +40,14 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8000
 
 浏览器访问：http://localhost:8000
 
+## Railway 一键部署
+
+1. 打开 [Railway](https://railway.app) 并登录
+2. **New Project** → **Deploy from GitHub repo** → 选择 `ai-japanese-reservation`
+3. 部署会自动使用 `Dockerfile` 构建，无需额外配置
+4. 部署完成后，在 **Settings** → **Networking** → **Generate Domain** 生成公网域名
+5. 访问生成的域名即可使用
+
 ## 配置说明
 
 | 变量 | 说明 | 默认 |

@@ -104,7 +104,7 @@
 }
 .date-picker-wrap input::placeholder {
   font-size: 8pt;
-  color: #228b22;
+  color: #999;
 }
 .date-icon {
   padding: 0 0.8rem;
@@ -342,11 +342,6 @@ body {
 .field textarea::placeholder {
   font-size: 8pt;
   color: #999;
-}
-.field input[type="date"]::-webkit-datetime-edit,
-.field input[type="date"]::-webkit-datetime-edit-fields-wrapper {
-  font-size: 8pt;
-  color: #228b22;
 }
 .field small {
   display: block;

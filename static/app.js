@@ -25,9 +25,8 @@ document.getElementById("langSelect").addEventListener("change", applyI18n);
 document.addEventListener("DOMContentLoaded", () => {
   applyI18n();
   const dateInput = document.getElementById("reservation_date");
-  const secondDate = document.getElementById("second_date");
+  const secondDateInput = document.getElementById("second_date");
   const today = new Date().toISOString().slice(0, 10);
-  if (secondDate) secondDate.min = today;
 
   const hourSelect = document.getElementById("reservation_hour");
   if (hourSelect) {
@@ -50,6 +49,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let pickerYear = new Date().getFullYear();
   let pickerMonth = new Date().getMonth();
+  let pickerYear2 = new Date().getFullYear();
+  let pickerMonth2 = new Date().getMonth();
 
   function renderDatePicker() {
     const popup = document.getElementById("datePickerPopup");
@@ -100,6 +101,55 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  function renderDatePicker2() {
+    const monthEl = document.getElementById("datePickerMonth2");
+    const daysEl = document.getElementById("datePickerDays2");
+    const firstDay = new Date(pickerYear2, pickerMonth2, 1);
+    const lastDay = new Date(pickerYear2, pickerMonth2 + 1, 0);
+    const startOffset = (firstDay.getDay() + 6) % 7;
+    const daysInMonth = lastDay.getDate();
+    const todayStr = new Date().toISOString().slice(0, 10);
+
+    monthEl.textContent = `${pickerYear2}年${String(pickerMonth2 + 1).padStart(2, "0")}月`;
+    daysEl.innerHTML = "";
+
+    for (let i = 0; i < startOffset; i++) {
+      const prevMonthLast = new Date(pickerYear2, pickerMonth2, 0).getDate();
+      const d = prevMonthLast - startOffset + i + 1;
+      const span = document.createElement("span");
+      span.className = "day other-month disabled";
+      span.textContent = d;
+      daysEl.appendChild(span);
+    }
+    for (let d = 1; d <= daysInMonth; d++) {
+      const span = document.createElement("span");
+      span.className = "day";
+      span.textContent = d;
+      const dateStr = `${pickerYear2}-${String(pickerMonth2 + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+      if (dateStr < todayStr) span.classList.add("disabled");
+      if (dateStr === todayStr) span.classList.add("today");
+      const sdVal = secondDateInput.value || secondDateInput.dataset.value;
+      if (sdVal === dateStr) span.classList.add("selected");
+      span.addEventListener("click", () => {
+        if (span.classList.contains("disabled")) return;
+        secondDateInput.value = dateStr;
+        secondDateInput.dataset.value = dateStr;
+        document.getElementById("datePickerPopup2").classList.add("hidden");
+        document.querySelectorAll("#datePickerDays2 .day.selected").forEach((s) => s.classList.remove("selected"));
+        span.classList.add("selected");
+      });
+      daysEl.appendChild(span);
+    }
+    const total = startOffset + daysInMonth;
+    const remaining = total % 7 ? 7 - (total % 7) : 0;
+    for (let i = 0; i < remaining; i++) {
+      const span = document.createElement("span");
+      span.className = "day other-month disabled";
+      span.textContent = i + 1;
+      daysEl.appendChild(span);
+    }
+  }
+
   document.getElementById("openDatePicker").addEventListener("click", () => {
     const popup = document.getElementById("datePickerPopup");
     const v = dateInput.value || dateInput.dataset.value;
@@ -130,15 +180,51 @@ document.addEventListener("DOMContentLoaded", () => {
     renderDatePicker();
   });
 
+  document.getElementById("openDatePicker2").addEventListener("click", () => {
+    const popup = document.getElementById("datePickerPopup2");
+    const v = secondDateInput.value || secondDateInput.dataset.value;
+    if (v) {
+      const [y, m] = v.split("-").map(Number);
+      pickerYear2 = y;
+      pickerMonth2 = m - 1;
+    }
+    renderDatePicker2();
+    popup.classList.toggle("hidden");
+  });
+
+  document.getElementById("prevMonth2").addEventListener("click", () => {
+    pickerMonth2--;
+    if (pickerMonth2 < 0) {
+      pickerMonth2 = 11;
+      pickerYear2--;
+    }
+    renderDatePicker2();
+  });
+
+  document.getElementById("nextMonth2").addEventListener("click", () => {
+    pickerMonth2++;
+    if (pickerMonth2 > 11) {
+      pickerMonth2 = 0;
+      pickerYear2++;
+    }
+    renderDatePicker2();
+  });
+
   document.addEventListener("click", (e) => {
     const popup = document.getElementById("datePickerPopup");
     const opener = document.getElementById("openDatePicker");
     if (!popup.contains(e.target) && !opener?.contains(e.target)) {
       popup.classList.add("hidden");
     }
+    const popup2 = document.getElementById("datePickerPopup2");
+    const opener2 = document.getElementById("openDatePicker2");
+    if (!popup2.contains(e.target) && !opener2?.contains(e.target)) {
+      popup2.classList.add("hidden");
+    }
   });
 
   renderDatePicker();
+  renderDatePicker2();
 });
 
 document.getElementById("reservationForm").addEventListener("submit", async (e) => {
@@ -163,7 +249,7 @@ document.getElementById("reservationForm").addEventListener("submit", async (e) 
   const number = document.getElementById("guest_phone_number").value.trim().replace(/\D/g, "");
   const guest_phone = (prefix.startsWith("+") ? prefix : prefix ? "+" + prefix : "+86") + number;
 
-  const secondDate = document.getElementById("second_date")?.value || "";
+  const secondDate = document.getElementById("second_date")?.value || document.getElementById("second_date")?.dataset?.value || "";
   const secondHour = document.getElementById("second_hour")?.value || "";
   const secondMinute = document.getElementById("second_minute")?.value || "";
   const secondTime = secondHour && secondMinute ? `${secondHour}:${secondMinute}` : "";

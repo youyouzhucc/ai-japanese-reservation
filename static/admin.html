@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>预约单管理后台</title>
+  <link rel="stylesheet" href="/static/admin.css">
+</head>
+<body>
+  <div class="admin-container">
+    <header class="admin-header">
+      <h1>📋 预约单管理后台</h1>
+      <p>日本餐厅预订服务 - 预约单查看与管理</p>
+      <a href="/" class="back-link">← 返回预约页面</a>
+    </header>
+
+    <div class="admin-toolbar">
+      <select id="statusFilter">
+        <option value="">全部状态</option>
+        <option value="pending">待支付</option>
+        <option value="reserving">预约中</option>
+        <option value="success">预约成功</option>
+        <option value="failed">预约失败</option>
+        <option value="cancelled">已取消</option>
+      </select>
+      <button id="refreshBtn">刷新</button>
+    </div>
+
+    <div class="table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>订单号</th>
+            <th>餐厅</th>
+            <th>预约人</th>
+            <th>预约时间</th>
+            <th>人数</th>
+            <th>状态</th>
+            <th>创建时间</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+          <tr><td colspan="8" class="loading">加载中...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div id="detailModal" class="modal hidden">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>预约详情</h2>
+          <button class="modal-close" id="closeModal">×</button>
+        </div>
+        <div class="modal-body" id="detailContent"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/admin.js"></script>
+</body>
+</html>

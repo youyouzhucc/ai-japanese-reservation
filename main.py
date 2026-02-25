@@ -15,7 +15,7 @@ BASE_DIR = Path(__file__).resolve().parent
 
 from config import settings
 from models import Reservation, ReservationStatus, get_engine, get_session_maker, init_db
-from schemas import ReservationCreate, ReservationResponse, PaymentRequest, PaymentResponse, CallbackRequest
+from schemas import ReservationCreate, ReservationResponse, PaymentRequest, PaymentResponse, CallbackRequest, ReservationStatusUpdate
 from services import create_payment, initiate_call, send_reservation_sms
 
 engine = get_engine(settings.database_url)
@@ -173,6 +173,25 @@ async def list_reservations(skip: int = 0, limit: int = 50, db=Depends(get_db)):
     return result.scalars().all()
 
 
+@app.patch("/api/reservations/{order_no}", response_model=ReservationResponse)
+async def update_reservation(order_no: str, data: ReservationStatusUpdate, db=Depends(get_db)):
+    """更新预约状态（如取消）"""
+    from sqlalchemy import select
+    result = await db.execute(select(Reservation).where(Reservation.order_no == order_no))
+    r = result.scalar_one_or_none()
+    if not r:
+        raise HTTPException(404, "订单不存在")
+    if data.status == "cancelled":
+        if r.status not in (ReservationStatus.PENDING.value, ReservationStatus.RESERVING.value):
+            raise HTTPException(400, f"当前状态不可取消: {r.status}")
+        r.status = ReservationStatus.CANCELLED.value
+    else:
+        raise HTTPException(400, f"不支持的状态: {data.status}")
+    await db.commit()
+    await db.refresh(r)
+    return r
+
+
 # 静态文件
 app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
 
@@ -180,6 +199,12 @@ app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="stat
 @app.get("/")
 async def index():
     return FileResponse(BASE_DIR / "static" / "index.html")
+
+
+@app.get("/admin")
+async def admin():
+    """预约单管理后台"""
+    return FileResponse(BASE_DIR / "static" / "admin.html")
 
 
 if __name__ == "__main__":

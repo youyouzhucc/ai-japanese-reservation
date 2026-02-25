@@ -56,3 +56,8 @@ class CallbackRequest(BaseModel):
     order_no: str
     success: bool
     result_message: str = ""
+
+
+class ReservationStatusUpdate(BaseModel):
+    """预约状态更新"""
+    status: str = Field(..., description="新状态: cancelled 等")

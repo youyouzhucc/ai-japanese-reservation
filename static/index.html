@@ -79,17 +79,25 @@
               <span class="date-icon">📅</span>
             </div>
             <div class="time-input-wrap" id="reservationTimeWrap">
-              <select id="reservation_hour" required>
-                <option value="">时</option>
-              </select>
+              <div class="custom-select-wrap">
+                <select id="reservation_hour" required aria-hidden="true" tabindex="-1">
+                  <option value="">时</option>
+                </select>
+                <button type="button" class="custom-select-trigger" data-for="reservation_hour">时</button>
+                <div class="custom-select-dropdown" data-for="reservation_hour"></div>
+              </div>
               <span class="time-sep">:</span>
-              <select id="reservation_minute" required>
-                <option value="">分</option>
-                <option value="10">10</option>
-                <option value="20">20</option>
-                <option value="30">30</option>
-                <option value="40">40</option>
-              </select>
+              <div class="custom-select-wrap">
+                <select id="reservation_minute" required aria-hidden="true" tabindex="-1">
+                  <option value="">分</option>
+                  <option value="10">10</option>
+                  <option value="20">20</option>
+                  <option value="30">30</option>
+                  <option value="40">40</option>
+                </select>
+                <button type="button" class="custom-select-trigger" data-for="reservation_minute">分</button>
+                <div class="custom-select-dropdown" data-for="reservation_minute"></div>
+              </div>
             </div>
           </div>
         </div>
@@ -101,17 +109,25 @@
               <span class="date-icon">📅</span>
             </div>
             <div class="time-input-wrap">
-              <select id="second_hour">
-                <option value="">时</option>
-              </select>
+              <div class="custom-select-wrap">
+                <select id="second_hour" aria-hidden="true" tabindex="-1">
+                  <option value="">时</option>
+                </select>
+                <button type="button" class="custom-select-trigger" data-for="second_hour">时</button>
+                <div class="custom-select-dropdown" data-for="second_hour"></div>
+              </div>
               <span class="time-sep">:</span>
-              <select id="second_minute">
-                <option value="">分</option>
-                <option value="10">10</option>
-                <option value="20">20</option>
-                <option value="30">30</option>
-                <option value="40">40</option>
-              </select>
+              <div class="custom-select-wrap">
+                <select id="second_minute" aria-hidden="true" tabindex="-1">
+                  <option value="">分</option>
+                  <option value="10">10</option>
+                  <option value="20">20</option>
+                  <option value="30">30</option>
+                  <option value="40">40</option>
+                </select>
+                <button type="button" class="custom-select-trigger" data-for="second_minute">分</button>
+                <div class="custom-select-dropdown" data-for="second_minute"></div>
+              </div>
             </div>
           </div>
         </div>

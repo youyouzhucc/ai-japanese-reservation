@@ -49,8 +49,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let pickerYear = new Date().getFullYear();
   let pickerMonth = new Date().getMonth();
-  let pickerYear2 = new Date().getFullYear();
-  let pickerMonth2 = new Date().getMonth();
+  let editingDateInput = null;
+
+  function openDatePicker(targetInput) {
+    editingDateInput = targetInput;
+    const v = targetInput.value || targetInput.dataset.value;
+    if (v) {
+      const [y, m] = v.split("-").map(Number);
+      pickerYear = y;
+      pickerMonth = m - 1;
+    } else {
+      pickerYear = new Date().getFullYear();
+      pickerMonth = new Date().getMonth();
+    }
+    const popup = document.getElementById("datePickerPopup");
+    const anchor = targetInput.closest(".date-picker-wrap");
+    const rect = anchor.getBoundingClientRect();
+    popup.style.top = (rect.bottom + 4) + "px";
+    popup.style.left = rect.left + "px";
+    renderDatePicker();
+    popup.classList.remove("hidden");
+  }
 
   function renderDatePicker() {
     const popup = document.getElementById("datePickerPopup");
@@ -80,11 +99,14 @@ document.addEventListener("DOMContentLoaded", () => {
       const dateStr = `${pickerYear}-${String(pickerMonth + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
       if (dateStr < todayStr) span.classList.add("disabled");
       if (dateStr === todayStr) span.classList.add("today");
-      if (dateInput.value === dateStr) span.classList.add("selected");
+      const currentVal = editingDateInput?.value || editingDateInput?.dataset?.value;
+      if (currentVal === dateStr) span.classList.add("selected");
       span.addEventListener("click", () => {
         if (span.classList.contains("disabled")) return;
-        dateInput.value = dateStr;
-        dateInput.dataset.value = dateStr;
+        if (editingDateInput) {
+          editingDateInput.value = dateStr;
+          editingDateInput.dataset.value = dateStr;
+        }
         popup.classList.add("hidden");
         document.querySelectorAll("#datePickerDays .day.selected").forEach((s) => s.classList.remove("selected"));
         span.classList.add("selected");
@@ -101,65 +123,26 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  function renderDatePicker2() {
-    const monthEl = document.getElementById("datePickerMonth2");
-    const daysEl = document.getElementById("datePickerDays2");
-    const firstDay = new Date(pickerYear2, pickerMonth2, 1);
-    const lastDay = new Date(pickerYear2, pickerMonth2 + 1, 0);
-    const startOffset = (firstDay.getDay() + 6) % 7;
-    const daysInMonth = lastDay.getDate();
-    const todayStr = new Date().toISOString().slice(0, 10);
-
-    monthEl.textContent = `${pickerYear2}年${String(pickerMonth2 + 1).padStart(2, "0")}月`;
-    daysEl.innerHTML = "";
-
-    for (let i = 0; i < startOffset; i++) {
-      const prevMonthLast = new Date(pickerYear2, pickerMonth2, 0).getDate();
-      const d = prevMonthLast - startOffset + i + 1;
-      const span = document.createElement("span");
-      span.className = "day other-month disabled";
-      span.textContent = d;
-      daysEl.appendChild(span);
-    }
-    for (let d = 1; d <= daysInMonth; d++) {
-      const span = document.createElement("span");
-      span.className = "day";
-      span.textContent = d;
-      const dateStr = `${pickerYear2}-${String(pickerMonth2 + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-      if (dateStr < todayStr) span.classList.add("disabled");
-      if (dateStr === todayStr) span.classList.add("today");
-      const sdVal = secondDateInput.value || secondDateInput.dataset.value;
-      if (sdVal === dateStr) span.classList.add("selected");
-      span.addEventListener("click", () => {
-        if (span.classList.contains("disabled")) return;
-        secondDateInput.value = dateStr;
-        secondDateInput.dataset.value = dateStr;
-        document.getElementById("datePickerPopup2").classList.add("hidden");
-        document.querySelectorAll("#datePickerDays2 .day.selected").forEach((s) => s.classList.remove("selected"));
-        span.classList.add("selected");
-      });
-      daysEl.appendChild(span);
-    }
-    const total = startOffset + daysInMonth;
-    const remaining = total % 7 ? 7 - (total % 7) : 0;
-    for (let i = 0; i < remaining; i++) {
-      const span = document.createElement("span");
-      span.className = "day other-month disabled";
-      span.textContent = i + 1;
-      daysEl.appendChild(span);
-    }
-  }
-
   document.getElementById("openDatePicker").addEventListener("click", () => {
     const popup = document.getElementById("datePickerPopup");
-    const v = dateInput.value || dateInput.dataset.value;
-    if (v) {
-      const [y, m] = v.split("-").map(Number);
-      pickerYear = y;
-      pickerMonth = m - 1;
+    if (popup.classList.contains("hidden")) {
+      openDatePicker(dateInput);
+    } else if (editingDateInput === dateInput) {
+      popup.classList.add("hidden");
+    } else {
+      openDatePicker(dateInput);
     }
-    renderDatePicker();
-    popup.classList.toggle("hidden");
+  });
+
+  document.getElementById("openDatePicker2").addEventListener("click", () => {
+    const popup = document.getElementById("datePickerPopup");
+    if (popup.classList.contains("hidden")) {
+      openDatePicker(secondDateInput);
+    } else if (editingDateInput === secondDateInput) {
+      popup.classList.add("hidden");
+    } else {
+      openDatePicker(secondDateInput);
+    }
   });
 
   document.getElementById("prevMonth").addEventListener("click", () => {
@@ -180,51 +163,14 @@ document.addEventListener("DOMContentLoaded", () => {
     renderDatePicker();
   });
 
-  document.getElementById("openDatePicker2").addEventListener("click", () => {
-    const popup = document.getElementById("datePickerPopup2");
-    const v = secondDateInput.value || secondDateInput.dataset.value;
-    if (v) {
-      const [y, m] = v.split("-").map(Number);
-      pickerYear2 = y;
-      pickerMonth2 = m - 1;
-    }
-    renderDatePicker2();
-    popup.classList.toggle("hidden");
-  });
-
-  document.getElementById("prevMonth2").addEventListener("click", () => {
-    pickerMonth2--;
-    if (pickerMonth2 < 0) {
-      pickerMonth2 = 11;
-      pickerYear2--;
-    }
-    renderDatePicker2();
-  });
-
-  document.getElementById("nextMonth2").addEventListener("click", () => {
-    pickerMonth2++;
-    if (pickerMonth2 > 11) {
-      pickerMonth2 = 0;
-      pickerYear2++;
-    }
-    renderDatePicker2();
-  });
-
   document.addEventListener("click", (e) => {
     const popup = document.getElementById("datePickerPopup");
     const opener = document.getElementById("openDatePicker");
-    if (!popup.contains(e.target) && !opener?.contains(e.target)) {
+    const opener2 = document.getElementById("openDatePicker2");
+    if (!popup.contains(e.target) && !opener?.contains(e.target) && !opener2?.contains(e.target)) {
       popup.classList.add("hidden");
     }
-    const popup2 = document.getElementById("datePickerPopup2");
-    const opener2 = document.getElementById("openDatePicker2");
-    if (!popup2.contains(e.target) && !opener2?.contains(e.target)) {
-      popup2.classList.add("hidden");
-    }
   });
-
-  renderDatePicker();
-  renderDatePicker2();
 });
 
 document.getElementById("reservationForm").addEventListener("submit", async (e) => {

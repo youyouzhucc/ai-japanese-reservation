@@ -112,11 +112,9 @@
   color: #6c757d;
 }
 .date-picker-popup {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  margin-top: 0.3rem;
+  position: fixed;
   z-index: 100;
+  margin-top: 0.3rem;
   background: #fff;
   border: 1px solid #dee2e6;
   border-radius: 10px;

@@ -71,7 +71,7 @@
       <section>
         <h2 data-i18n="reservationDetail">预约详情</h2>
         <div class="field field-datetime-row">
-          <div class="label-row"><label data-i18n="reservationDateTime">预约日期、时间</label><span class="required">*</span></div>
+          <div class="label-row"><label data-i18n="firstPreference">第一希望预约日期、时间</label><span class="required">*</span></div>
           <div class="datetime-inputs">
             <div class="date-picker-wrap" id="openDatePicker">
               <input type="text" id="reservation_date" required readonly data-placeholder="datePlaceholder">
@@ -91,15 +91,6 @@
                 <span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span>
               </div>
               <div id="datePickerDays" class="date-picker-days"></div>
-          </div>
-        </div>
-        <div class="field checkbox-field">
-          <div class="label-row label-row-inline">
-            <label data-i18n="timeAdjustable">若首选时间不可用，是否可调整其他时间？</label>
-            <div class="checkbox-row">
-              <label class="radio-label"><input type="radio" name="time_adjustable" value="yes" checked><span data-i18n="timeAdjustableYes">可以</span></label>
-              <label class="radio-label"><input type="radio" name="time_adjustable" value="no"><span data-i18n="timeAdjustableNo">不可以</span></label>
-            </div>
           </div>
         </div>
         <div class="field">

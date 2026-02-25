@@ -301,6 +301,7 @@ body {
   font-size: 0.9rem;
   margin-bottom: 0.4rem;
   color: #495057;
+  font-weight: bold;
 }
 .label-row {
   display: flex;

@@ -39,6 +39,14 @@
   width: auto !important;
   padding: 0.6rem 1rem !important;
   flex-shrink: 0;
+  background: #f8f9fa !important;
+  color: #495057;
+  border: 1px solid #dee2e6;
+}
+.search-btn:hover {
+  background: #e9ecef !important;
+  transform: none;
+  box-shadow: none;
 }
 .restaurant-search-field {
   position: relative;

@@ -1,9 +1,10 @@
-"""餐厅搜索服务：支持 mock 数据与 Google Places API"""
+"""餐厅搜索服务：支持 OpenStreetMap(免费)、Google Places API、Mock 数据"""
 from __future__ import annotations
 
+import re
 from typing import Any
 
-# Mock 数据：日本餐厅示例（可替换为 Google Places 等真实数据源）
+# Mock 数据：无 API 时的兜底
 MOCK_RESTAURANTS = [
     {"name": "銀座 すし 太郎", "phone": "+81-3-1234-5678", "address": "東京都中央区銀座1-2-3"},
     {"name": "築地 寿司 大", "phone": "+81-3-3547-6797", "address": "東京都中央区築地4-5-6"},
@@ -22,7 +23,8 @@ async def search_restaurants(query: str, api_key: str | None = None) -> list[dic
     """
     搜索餐厅，返回 [{name, phone, address}, ...]
     - 有 api_key 时使用 Google Places API
-    - 否则使用 mock 数据按关键词过滤
+    - 否则使用 OpenStreetMap Overpass API（免费，无需 Key）
+    - OSM 无结果时回退到 mock
     """
     query = (query or "").strip()
     if not query:
@@ -30,7 +32,53 @@ async def search_restaurants(query: str, api_key: str | None = None) -> list[dic
 
     if api_key:
         return await _search_google_places(query, api_key)
-    return _search_mock(query)
+    results = await _search_osm(query)
+    return results if results else _search_mock(query)
+
+
+async def _search_osm(query: str) -> list[dict[str, Any]]:
+    """OpenStreetMap Overpass API - 完全免费，无需 API Key。电话覆盖率取决于 OSM 数据"""
+    import httpx
+
+    # 转义正则特殊字符，支持按名称搜索
+    safe = re.escape(query[:50])  # 限制长度
+    overpass_url = "https://overpass-api.de/api/interpreter"
+    # 日本范围 bbox (south, west, north, east)，扩展以覆盖主要城市
+    bbox = "(24.0,122.0,46.0,154.0)"
+    body = f"""
+[out:json][timeout:15];
+(
+  node["amenity"~"restaurant|cafe|fast_food"]{bbox}["name"~"{safe}",i];
+  way["amenity"~"restaurant|cafe|fast_food"]{bbox}["name"~"{safe}",i];
+);
+out body;
+"""
+    try:
+        async with httpx.AsyncClient(timeout=20) as client:
+            resp = await client.post(overpass_url, content=body)
+            data = resp.json()
+    except Exception:
+        return []
+
+    elements = data.get("elements", [])
+    results = []
+    seen = set()
+    for el in elements[:12]:
+        tags = el.get("tags", {})
+        name = tags.get("name", "").strip()
+        if not name or name in seen:
+            continue
+        seen.add(name)
+        phone = tags.get("phone") or tags.get("contact:phone") or tags.get("contact:phone_1") or ""
+        addr_parts = [
+            tags.get("addr:street"),
+            tags.get("addr:housenumber"),
+            tags.get("addr:city") or tags.get("addr:town"),
+            tags.get("addr:country"),
+        ]
+        address = " ".join(p for p in addr_parts if p) or tags.get("addr:full", "")
+        results.append({"name": name, "phone": phone, "address": address})
+    return results[:8]
 
 
 def _search_mock(query: str) -> list[dict[str, Any]]:

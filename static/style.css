@@ -3,7 +3,12 @@
 }
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  background: #ffffff;
+  background-color: #f5f0eb;
+  background-image: linear-gradient(
+      rgba(255, 255, 255, 0.92),
+      rgba(255, 255, 255, 0.88)
+    ),
+    url("https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=1920") center/cover fixed no-repeat;
   color: #333;
   min-height: 100vh;
   margin: 0;

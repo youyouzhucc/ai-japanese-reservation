@@ -49,7 +49,7 @@ def _parse_datetime(s: str) -> datetime:
 
 @app.post("/api/reservations", response_model=ReservationResponse)
 async def create_reservation(data: ReservationCreate, db=Depends(get_db)):
-    """① 创建预约单（待支付）"""
+    """创建预约单并直接发起 AI 电话（暂无需支付）"""
     dt = _parse_datetime(data.reservation_datetime)
     # 校验十分钟间隔
     if dt.minute % 10 != 0:
@@ -65,12 +65,14 @@ async def create_reservation(data: ReservationCreate, db=Depends(get_db)):
         adults=data.adults,
         children=data.children,
         notes=data.notes,
-        status=ReservationStatus.PENDING.value,
+        status=ReservationStatus.RESERVING.value,
         amount_cents=100,
     )
     db.add(r)
     await db.commit()
     await db.refresh(r)
+    # 直接异步发起 AI 电话
+    asyncio.create_task(_run_ai_call_and_notify(r.id))
     return r
 
 

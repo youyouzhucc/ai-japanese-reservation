@@ -48,16 +48,6 @@ document.getElementById("reservationForm").addEventListener("submit", async (e) 
       throw new Error(err.detail || res.statusText);
     }
     const order = await res.json();
-    // 支付
-    const payRes = await fetch(`${API}/api/pay`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ order_no: order.order_no, amount_cents: 100 }),
-    });
-    if (!payRes.ok) {
-      const err = await payRes.json().catch(() => ({}));
-      throw new Error(err.detail || "支付失败");
-    }
     document.getElementById("result").classList.remove("hidden");
     document.getElementById("orderInfo").textContent = `订单号：${order.order_no}\n餐厅：${order.restaurant_name}\n预约时间：${reservation_datetime}\n状态：预约中`;
     document.getElementById("statusMsg").textContent = "AI 正在致电餐厅，请稍候。完成后将短信通知您。";
@@ -67,7 +57,7 @@ document.getElementById("reservationForm").addEventListener("submit", async (e) 
     alert(err.message || "提交失败");
   } finally {
     btn.disabled = false;
-    btn.textContent = "提交预约并支付";
+    btn.textContent = "提交预约";
   }
 });
 

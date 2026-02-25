@@ -10,8 +10,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # 复制代码
 COPY . .
 
-# Railway 会注入 PORT 环境变量
-ENV PORT=8000
-EXPOSE $PORT
+# Railway 默认 PORT=8080，Generate Domain 时请填 8080
+ENV PORT=8080
+EXPOSE 8080
 
-CMD uvicorn main:app --host 0.0.0.0 --port $PORT
+CMD uvicorn main:app --host 0.0.0.0 --port ${PORT:-8080}

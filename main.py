@@ -13,6 +13,19 @@ from fastapi.responses import FileResponse
 
 BASE_DIR = Path(__file__).resolve().parent
 
+
+class StaticFilesCache(StaticFiles):
+    """StaticFiles with Cache-Control for faster repeat visits"""
+
+    def __init__(self, *args, cache_control: str = "public, max-age=86400", **kwargs):
+        self.cache_control = cache_control
+        super().__init__(*args, **kwargs)
+
+    def file_response(self, *args, **kwargs):
+        resp = super().file_response(*args, **kwargs)
+        resp.headers.setdefault("Cache-Control", self.cache_control)
+        return resp
+
 from config import settings
 from models import Reservation, ReservationStatus, get_engine, get_session_maker, init_db
 from schemas import ReservationCreate, ReservationResponse, PaymentRequest, PaymentResponse, CallbackRequest, ReservationStatusUpdate
@@ -209,8 +222,8 @@ async def update_reservation(order_no: str, data: ReservationStatusUpdate, db=De
     return r
 
 
-# 静态文件
-app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
+# 静态文件（带缓存头，加速重复访问）
+app.mount("/static", StaticFilesCache(directory=str(BASE_DIR / "static")), name="static")
 
 
 @app.get("/")

@@ -22,7 +22,7 @@ function applyI18n() {
 document.getElementById("langSelect").value = currentLang;
 document.getElementById("langSelect").addEventListener("change", applyI18n);
 
-document.addEventListener("DOMContentLoaded", () => {
+function initReservationForm() {
   applyI18n();
   const dateInput = document.getElementById("reservation_date");
   const secondDateInput = document.getElementById("second_date");
@@ -171,7 +171,13 @@ document.addEventListener("DOMContentLoaded", () => {
       popup.classList.add("hidden");
     }
   });
-});
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initReservationForm);
+} else {
+  initReservationForm();
+}
 
 document.getElementById("reservationForm").addEventListener("submit", async (e) => {
   e.preventDefault();

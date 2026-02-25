@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>日本餐厅预订服务</title>
   <link rel="stylesheet" href="/static/style.css">
+  <link rel="preload" href="/static/images/banner-1.jpg" as="image">
 </head>
 <body>
   <header class="page-header">
@@ -20,10 +21,10 @@
     </div>
     <div class="banner">
       <div class="banner-track">
-        <div class="banner-slide"><img src="/static/images/banner-1.png" alt="寿司"></div>
-        <div class="banner-slide"><img src="/static/images/banner-2.png" alt="寿司拼盘"></div>
-        <div class="banner-slide"><img src="/static/images/banner-3.png" alt="章鱼烧"></div>
-        <div class="banner-slide"><img src="/static/images/banner-4.png" alt="炸猪排"></div>
+        <div class="banner-slide"><img src="/static/images/banner-1.jpg" alt="寿司" loading="eager" width="400" height="267"></div>
+        <div class="banner-slide"><img src="/static/images/banner-2.jpg" alt="寿司拼盘" loading="lazy" width="266" height="400"></div>
+        <div class="banner-slide"><img src="/static/images/banner-3.jpg" alt="章鱼烧" loading="lazy" width="400" height="267"></div>
+        <div class="banner-slide"><img src="/static/images/banner-4.jpg" alt="炸猪排" loading="lazy" width="400" height="267"></div>
       </div>
     </div>
   </header>
@@ -160,7 +161,7 @@
   </div>
   </main>
 
-  <script src="/static/i18n.js"></script>
-  <script src="/static/app.js"></script>
+  <script src="/static/i18n.js" defer></script>
+  <script src="/static/app.js" defer></script>
 </body>
 </html>

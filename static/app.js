@@ -15,7 +15,7 @@ function applyI18n() {
   document.querySelectorAll("[data-i18n]").forEach((el) => {
     const key = el.getAttribute("data-i18n");
     if (key && el.tagName !== "INPUT" && el.tagName !== "TEXTAREA") {
-      el.textContent = el.textContent || t(key);
+      el.textContent = t(key);
     }
   });
   document.querySelectorAll("[data-placeholder]").forEach((el) => {

@@ -120,7 +120,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.addEventListener("click", (e) => {
     const popup = document.getElementById("datePickerPopup");
-    if (!popup.contains(e.target) && e.target.id !== "openDatePicker") {
+    const opener = document.getElementById("openDatePicker");
+    if (!popup.contains(e.target) && !opener?.contains(e.target)) {
       popup.classList.add("hidden");
     }
   });

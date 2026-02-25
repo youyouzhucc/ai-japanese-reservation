@@ -4,7 +4,7 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# Mock 数据：无 API 时的兜底
+# Mock 数据：OSM 无结果或失败时的兜底
 MOCK_RESTAURANTS = [
     {"name": "銀座 すし 太郎", "phone": "+81-3-1234-5678", "address": "東京都中央区銀座1-2-3"},
     {"name": "築地 寿司 大", "phone": "+81-3-3547-6797", "address": "東京都中央区築地4-5-6"},
@@ -16,6 +16,8 @@ MOCK_RESTAURANTS = [
     {"name": "うどん 丸亀製麺", "phone": "+81-3-1234-5671", "address": "東京都千代田区丸の内2-4-1"},
     {"name": "ラーメン 一風堂", "phone": "+81-3-5772-1010", "address": "東京都港区赤坂5-3-1"},
     {"name": "焼肉 叙々苑", "phone": "+81-3-3583-1234", "address": "東京都港区六本木6-10-1"},
+    {"name": "神户牛铁板烧 Ishida", "phone": "+81-78-321-0123", "address": "兵庫県神戸市中央区"},
+    {"name": "スターバックス 銀座", "phone": "+81-3-1234-5679", "address": "東京都中央区銀座"},
 ]
 
 
@@ -33,7 +35,11 @@ async def search_restaurants(query: str, api_key: str | None = None) -> list[dic
     if api_key:
         return await _search_google_places(query, api_key)
     results = await _search_osm(query)
-    return results if results else _search_mock(query)
+    if results:
+        return results
+    mock_results = _search_mock(query)
+    # OSM 无结果时：有关键词匹配则返回 mock，否则返回全部示例供参考
+    return mock_results if mock_results else _get_all_mock()
 
 
 OVERPASS_ENDPOINTS = [
@@ -67,7 +73,12 @@ out body;
             async with httpx.AsyncClient(timeout=25) as client:
                 resp = await client.post(url, content=body)
                 resp.raise_for_status()
+                ct = resp.headers.get("content-type", "")
+                if "json" not in ct:
+                    continue  # Overpass 返回 HTML 错误页时跳过
                 data = resp.json()
+                if not isinstance(data, dict):
+                    continue
                 break
         except Exception:
             continue
@@ -107,17 +118,30 @@ out body;
 
 
 def _search_mock(query: str) -> list[dict[str, Any]]:
-    """Mock 搜索：按名称关键词过滤"""
-    q = query.lower()
+    """Mock 搜索：按名称/地址关键词过滤，支持日文罗马音等"""
+    q = query.lower().strip()
+    if not q:
+        return []
     results = []
     for r in MOCK_RESTAURANTS:
-        if q in r["name"].lower() or q in (r.get("address") or "").lower():
+        name_lower = r["name"].lower()
+        addr_lower = (r.get("address") or "").lower()
+        # 支持部分匹配、罗马音（寿司/すし/sushi、东京/東京/tokyo 等）
+        if q in name_lower or q in addr_lower:
             results.append({
                 "name": r["name"],
                 "phone": r.get("phone") or "",
                 "address": r.get("address") or "",
             })
-    return results[:8]  # 最多返回 8 条
+    return results[:8]
+
+
+def _get_all_mock() -> list[dict[str, Any]]:
+    """返回全部示例餐厅，供无匹配时参考"""
+    return [
+        {"name": r["name"], "phone": r.get("phone") or "", "address": r.get("address") or ""}
+        for r in MOCK_RESTAURANTS[:8]
+    ]
 
 
 async def _search_google_places(query: str, api_key: str) -> list[dict[str, Any]]:

@@ -30,16 +30,21 @@ function initRestaurantSearch() {
       resultsEl.classList.add("hidden");
       return;
     }
+    resultsEl.innerHTML = '<div class="search-result-item" style="color:#999">搜索中...</div>';
+    resultsEl.classList.remove("hidden");
     try {
       const res = await fetch(`${API}/api/restaurants/search?q=${encodeURIComponent(q)}`);
-      if (!res.ok) return;
+      if (!res.ok) {
+        resultsEl.innerHTML = '<div class="search-result-item" style="color:#999">搜索失败，请重试</div>';
+        return;
+      }
       const data = await res.json();
       const list = data.results || [];
       resultsEl.innerHTML = "";
       if (list.length === 0) {
         const empty = document.createElement("div");
         empty.className = "search-result-item";
-        empty.textContent = "未找到相关餐厅";
+        empty.textContent = "未找到相关餐厅，请手动填写下方信息";
         empty.style.color = "#999";
         resultsEl.appendChild(empty);
       } else {

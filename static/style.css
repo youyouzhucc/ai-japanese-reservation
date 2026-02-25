@@ -34,8 +34,21 @@
   background: #fff;
   color: #333;
 }
-.phone-row {
-  grid-template-columns: 100px 1fr;
+.phone-input-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 0;
+}
+.phone-input-group label {
+  white-space: nowrap;
+  font-size: 0.9rem;
+  color: #495057;
+}
+.phone-input-group input {
+  flex: 1;
+  min-width: 0;
 }
 .datetime-inputs .time-input-wrap {
   flex: 1;
@@ -298,6 +311,7 @@ body {
 .label-row label {
   margin-bottom: 0;
   display: inline;
+  font-weight: bold;
 }
 .label-row-inline {
   flex-wrap: wrap;
@@ -351,6 +365,12 @@ body {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
+}
+.row.phone-row {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
 }
 .actions {
   margin-top: 1.5rem;

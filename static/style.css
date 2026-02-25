@@ -4,6 +4,23 @@
 .page-header {
   margin: -2rem -2rem 0 -2rem;
   margin-bottom: 1.5rem;
+  background: #f5f0eb;
+}
+.page-content {
+  position: relative;
+  min-height: calc(100vh - 2rem);
+}
+.page-content::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url("/static/images/bg-pattern.png") repeat;
+  opacity: 0.3;
+  pointer-events: none;
+  z-index: -1;
 }
 .banner {
   width: 100%;
@@ -42,11 +59,6 @@
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   background-color: #f5f0eb;
-  background-image: linear-gradient(
-      rgba(255, 255, 255, 0.92),
-      rgba(255, 255, 255, 0.88)
-    ),
-    url("https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=1920") center/cover fixed no-repeat;
   color: #333;
   min-height: 100vh;
   margin: 0;

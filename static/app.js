@@ -47,56 +47,6 @@ function initReservationForm() {
     }
   }
 
-  function initCustomSelect(selectId) {
-    const sel = document.getElementById(selectId);
-    if (!sel) return;
-    const wrap = sel.closest(".custom-select-wrap");
-    const trigger = wrap?.querySelector(".custom-select-trigger");
-    const dropdown = wrap?.querySelector(".custom-select-dropdown");
-    if (!trigger || !dropdown) return;
-
-    function renderOptions() {
-      dropdown.innerHTML = "";
-      for (const opt of sel.options) {
-        const div = document.createElement("div");
-        div.className = "custom-select-option" + (opt.value === "" ? " empty-opt" : "");
-        div.textContent = opt.textContent;
-        div.dataset.value = opt.value;
-        div.addEventListener("click", () => {
-          sel.value = opt.value;
-          trigger.textContent = opt.textContent;
-          trigger.classList.toggle("empty", opt.value === "");
-          dropdown.classList.remove("open");
-        });
-        dropdown.appendChild(div);
-      }
-    }
-    function syncTrigger() {
-      const opt = sel.options[sel.selectedIndex];
-      trigger.textContent = opt ? opt.textContent : "";
-      trigger.classList.toggle("empty", !sel.value);
-    }
-    trigger.addEventListener("click", (e) => {
-      e.preventDefault();
-      document.querySelectorAll(".custom-select-dropdown.open").forEach(d => d.classList.remove("open"));
-      dropdown.classList.toggle("open");
-    });
-    renderOptions();
-    syncTrigger();
-    sel.addEventListener("change", syncTrigger);
-  }
-
-  document.querySelectorAll(".custom-select-wrap").forEach(wrap => {
-    const sel = wrap.querySelector("select");
-    if (sel) initCustomSelect(sel.id);
-  });
-
-  document.addEventListener("click", (e) => {
-    if (!e.target.closest(".custom-select-wrap")) {
-      document.querySelectorAll(".custom-select-dropdown.open").forEach(d => d.classList.remove("open"));
-    }
-  });
-
   let pickerYear = new Date().getFullYear();
   let pickerMonth = new Date().getMonth();
   let editingDateInput = null;

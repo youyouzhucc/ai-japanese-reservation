@@ -5,15 +5,15 @@ document.addEventListener("DOMContentLoaded", () => {
   dateInput.min = new Date().toISOString().slice(0, 10);
 });
 
-function roundTimeToHalfHour(timeStr) {
+function roundTimeToTenMinutes(timeStr) {
   if (!timeStr) return timeStr;
   const [h, m] = timeStr.split(":").map(Number);
-  const rounded = Math.floor(m / 30) * 30;
+  const rounded = Math.floor(m / 10) * 10;
   return `${String(h).padStart(2, "0")}:${String(rounded).padStart(2, "0")}`;
 }
 
 document.getElementById("reservation_time").addEventListener("change", function () {
-  this.value = roundTimeToHalfHour(this.value);
+  this.value = roundTimeToTenMinutes(this.value);
 });
 
 document.getElementById("reservationForm").addEventListener("submit", async (e) => {
@@ -23,7 +23,7 @@ document.getElementById("reservationForm").addEventListener("submit", async (e) 
   btn.textContent = "提交中...";
 
   const date = document.getElementById("reservation_date").value;
-  const time = roundTimeToHalfHour(document.getElementById("reservation_time").value);
+  const time = roundTimeToTenMinutes(document.getElementById("reservation_time").value);
   const reservation_datetime = `${date} ${time}`;
 
   const payload = {

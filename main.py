@@ -51,9 +51,9 @@ def _parse_datetime(s: str) -> datetime:
 async def create_reservation(data: ReservationCreate, db=Depends(get_db)):
     """① 创建预约单（待支付）"""
     dt = _parse_datetime(data.reservation_datetime)
-    # 校验半小时间隔
-    if dt.minute % 30 != 0:
-        raise HTTPException(400, "预约时间需为半小时整点，如 18:00、18:30")
+    # 校验十分钟间隔
+    if dt.minute % 10 != 0:
+        raise HTTPException(400, "预约时间需为十分钟整点，如 18:00、18:10、18:20")
     order_no = _gen_order_no()
     r = Reservation(
         order_no=order_no,

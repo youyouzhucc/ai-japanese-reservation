@@ -1,4 +1,7 @@
 .env
+*.pem
+*.crt
+*.csr
 __pycache__/
 *.pyc
 *.db

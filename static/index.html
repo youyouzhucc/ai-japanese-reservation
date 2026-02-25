@@ -38,11 +38,11 @@
       <section>
         <h2 data-i18n="restaurant">餐厅信息</h2>
         <div class="field">
-          <label for="restaurant_name" data-i18n="restaurantName">餐厅名称</label> <span class="required">*</span>
+          <div class="label-row"><label for="restaurant_name" data-i18n="restaurantName">餐厅名称</label><span class="required">*</span></div>
           <input type="text" id="restaurant_name" required data-placeholder="exampleRestaurant">
         </div>
         <div class="field">
-          <label for="restaurant_phone" data-i18n="restaurantPhone">餐厅电话</label> <span class="required">*</span>
+          <div class="label-row"><label for="restaurant_phone" data-i18n="restaurantPhone">餐厅电话</label><span class="required">*</span></div>
           <input type="tel" id="restaurant_phone" required data-placeholder="examplePhone">
         </div>
       </section>
@@ -50,11 +50,11 @@
       <section>
         <h2 data-i18n="reservation">预约信息</h2>
         <div class="field">
-          <label for="guest_name" data-i18n="guestName">预约人姓名</label> <span class="required">*</span>
+          <div class="label-row"><label for="guest_name" data-i18n="guestName">预约人姓名</label><span class="required">*</span></div>
           <input type="text" id="guest_name" required data-placeholder="exampleGuest">
         </div>
         <div class="field">
-          <label data-i18n="guestPhone">预约人电话</label> <span class="required">*</span>
+          <div class="label-row"><label data-i18n="guestPhone">预约人电话</label><span class="required">*</span></div>
           <div class="row phone-row">
             <div class="field">
               <label for="guest_phone_prefix" class="field-sublabel" data-i18n="areaCode">区号</label>
@@ -72,7 +72,7 @@
         <h2 data-i18n="reservationDetail">预约详情</h2>
         <p class="busy-note" data-i18n="busyTimeNote">※ 12:30 为繁忙时段，恕不接受预约。</p>
         <div class="field">
-          <label data-i18n="reservationDate">预约日期</label> <span class="required">*</span>
+          <div class="label-row"><label data-i18n="reservationDate">预约日期</label><span class="required">*</span></div>
           <div class="date-picker-wrap">
             <input type="text" id="reservation_date" required readonly data-placeholder="datePlaceholder">
             <button type="button" class="date-picker-btn" id="openDatePicker" title="选择日期">📅</button>
@@ -90,15 +90,17 @@
           </div>
         </div>
         <div class="field">
-          <label for="reservation_time" data-i18n="reservationTime">预约时间</label> <span class="required">*</span>
+          <div class="label-row"><label for="reservation_time" data-i18n="reservationTime">预约时间</label><span class="required">*</span></div>
           <input type="time" id="reservation_time" required step="600">
           <small data-i18n="timeHint">时间为十分钟整点（如 18:00、18:10、18:20）</small>
         </div>
         <div class="field checkbox-field">
-          <label data-i18n="timeAdjustable">若首选时间不可用，是否可调整其他时间？</label>
-          <div class="checkbox-row">
-            <label class="radio-label"><input type="radio" name="time_adjustable" value="yes" checked> <span data-i18n="timeAdjustableYes">可以</span></label>
-            <label class="radio-label"><input type="radio" name="time_adjustable" value="no"> <span data-i18n="timeAdjustableNo">不可以</span></label>
+          <div class="label-row label-row-inline">
+            <label data-i18n="timeAdjustable">若首选时间不可用，是否可调整其他时间？</label>
+            <div class="checkbox-row">
+              <label class="radio-label"><input type="radio" name="time_adjustable" value="yes" checked> <span data-i18n="timeAdjustableYes">可以</span></label>
+              <label class="radio-label"><input type="radio" name="time_adjustable" value="no"> <span data-i18n="timeAdjustableNo">不可以</span></label>
+            </div>
           </div>
         </div>
         <div class="field">
@@ -116,11 +118,11 @@
         </div>
         <div class="row">
           <div class="field">
-            <label for="adults" data-i18n="adults">成人人数</label> <span class="required">*</span>
+            <div class="label-row"><label for="adults" data-i18n="adults">成人人数</label><span class="required">*</span></div>
             <input type="number" id="adults" value="1" min="1" max="20" required>
           </div>
           <div class="field">
-            <label for="children" data-i18n="children">儿童人数</label> <span class="required">*</span>
+            <div class="label-row"><label for="children" data-i18n="children">儿童人数</label><span class="required">*</span></div>
             <input type="number" id="children" value="0" min="0" max="20" required>
           </div>
         </div>

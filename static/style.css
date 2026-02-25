@@ -42,6 +42,8 @@
   color: #000;
   cursor: pointer;
   background: #fff;
+  appearance: auto;
+  -webkit-appearance: menulist;
 }
 .time-input-wrap select option[value=""] {
   color: #999;
@@ -96,6 +98,7 @@
   min-width: 0;
   font-size: 10pt;
   color: #000;
+  pointer-events: none;
 }
 .date-picker-wrap input::placeholder {
   font-size: 10pt;
@@ -108,7 +111,7 @@
 }
 .date-picker-popup {
   position: fixed;
-  z-index: 100;
+  z-index: 9999;
   margin-top: 0.3rem;
   background: #fff;
   border: 1px solid #dee2e6;

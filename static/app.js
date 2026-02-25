@@ -62,6 +62,7 @@ function initReservationForm() {
     const rect = anchor.getBoundingClientRect();
     popup.style.top = (rect.bottom + 4) + "px";
     popup.style.left = rect.left + "px";
+    popup.style.display = "block";
     renderDatePicker();
     popup.classList.remove("hidden");
   }
@@ -96,7 +97,9 @@ function initReservationForm() {
       if (dateStr === todayStr) span.classList.add("today");
       const currentVal = editingDateInput?.value || editingDateInput?.dataset?.value;
       if (currentVal === dateStr) span.classList.add("selected");
-      span.addEventListener("click", () => {
+      span.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         if (span.classList.contains("disabled")) return;
         if (editingDateInput) {
           editingDateInput.value = dateStr;
@@ -118,7 +121,9 @@ function initReservationForm() {
     }
   }
 
-  document.getElementById("openDatePicker").addEventListener("click", () => {
+  document.getElementById("openDatePicker").addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
     const popup = document.getElementById("datePickerPopup");
     if (popup.classList.contains("hidden")) {
       openDatePicker(dateInput);
@@ -129,7 +134,9 @@ function initReservationForm() {
     }
   });
 
-  document.getElementById("openDatePicker2").addEventListener("click", () => {
+  document.getElementById("openDatePicker2").addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
     const popup = document.getElementById("datePickerPopup");
     if (popup.classList.contains("hidden")) {
       openDatePicker(secondDateInput);
@@ -140,7 +147,8 @@ function initReservationForm() {
     }
   });
 
-  document.getElementById("prevMonth").addEventListener("click", () => {
+  document.getElementById("prevMonth").addEventListener("click", (e) => {
+    e.preventDefault();
     pickerMonth--;
     if (pickerMonth < 0) {
       pickerMonth = 11;
@@ -149,7 +157,8 @@ function initReservationForm() {
     renderDatePicker();
   });
 
-  document.getElementById("nextMonth").addEventListener("click", () => {
+  document.getElementById("nextMonth").addEventListener("click", (e) => {
+    e.preventDefault();
     pickerMonth++;
     if (pickerMonth > 11) {
       pickerMonth = 0;
@@ -249,6 +258,7 @@ document.getElementById("reservationForm").addEventListener("submit", async (e) 
 async function doPay(order, reservationDatetime) {
   const orderNo = order.order_no;
   const btn = document.getElementById("checkStatusBtn");
+  const resultDiv = document.getElementById("result");
   btn.disabled = true;
   btn.textContent = "支付中...";
   try {
@@ -263,9 +273,18 @@ async function doPay(order, reservationDatetime) {
     }
     const payResult = await res.json();
     if (!payResult.success) throw new Error(payResult.message || "支付失败");
-    document.getElementById("orderInfo").textContent =
-      `订单号：${orderNo}\n餐厅：${order.restaurant_name}\n预约时间：${reservationDatetime}\n状态：预约中`;
-    document.getElementById("statusMsg").textContent = t("statusReserving");
+    if (payResult.qr_code) {
+      document.getElementById("orderInfo").innerHTML =
+        `订单号：${orderNo}<br>餐厅：${order.restaurant_name}<br>预约时间：${reservationDatetime}<br>金额：1元<br><br>` +
+        `<p style="margin:8px 0">请使用支付宝扫码支付：</p>` +
+        `<img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(payResult.qr_code)}" alt="支付二维码" style="display:block;margin:8px auto;border:1px solid #ddd;padding:8px">`;
+      document.getElementById("statusMsg").textContent = "扫码支付完成后，AI 将自动致电餐厅，请稍后刷新查看状态";
+    } else {
+      document.getElementById("orderInfo").textContent =
+        `订单号：${orderNo}\n餐厅：${order.restaurant_name}\n预约时间：${reservationDatetime}\n状态：预约中`;
+      document.getElementById("statusMsg").textContent = t("statusReserving");
+    }
+    document.getElementById("statusMsg").className = "status-reserving";
     btn.textContent = t("refreshStatus");
     btn.disabled = false;
     btn.onclick = () => checkStatus(orderNo);

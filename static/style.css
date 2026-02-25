@@ -40,17 +40,23 @@
 .datetime-inputs .time-input-wrap {
   flex: 1;
   min-width: 120px;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
 }
-.datetime-inputs .time-input-wrap input {
-  width: 100%;
-}
-.time-input-wrap {
+.time-input-wrap select {
+  flex: 1;
+  min-width: 60px;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
   cursor: pointer;
+  background: #fff;
 }
-.time-input-wrap input {
-  width: 100%;
-  min-width: 120px;
-  cursor: pointer;
+.time-sep {
+  font-weight: 600;
+  color: #333;
 }
 .checkbox-field {
   margin-top: 1rem;
@@ -66,6 +72,10 @@
 }
 .field-datetime-row .label-row {
   margin-bottom: 0.4rem;
+}
+.field-datetime-row .label-row label {
+  color: #000;
+  font-weight: bold;
 }
 .datetime-inputs {
   display: flex;
@@ -91,6 +101,10 @@
   padding: 0.7rem 1rem;
   cursor: pointer;
   min-width: 0;
+}
+.date-picker-wrap input::placeholder {
+  font-size: 8pt;
+  color: #228b22;
 }
 .date-icon {
   padding: 0 0.8rem;
@@ -326,7 +340,13 @@ body {
 }
 .field input::placeholder,
 .field textarea::placeholder {
+  font-size: 8pt;
   color: #999;
+}
+.field input[type="date"]::-webkit-datetime-edit,
+.field input[type="date"]::-webkit-datetime-edit-fields-wrapper {
+  font-size: 8pt;
+  color: #228b22;
 }
 .field small {
   display: block;

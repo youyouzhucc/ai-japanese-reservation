@@ -78,7 +78,17 @@
               <span class="date-icon">📅</span>
             </div>
             <div class="time-input-wrap" id="reservationTimeWrap">
-              <input type="time" id="reservation_time" required step="600">
+              <select id="reservation_hour" required>
+                <option value="">时</option>
+              </select>
+              <span class="time-sep">:</span>
+              <select id="reservation_minute" required>
+                <option value="">分</option>
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="30">30</option>
+                <option value="40">40</option>
+              </select>
             </div>
           </div>
           <div id="datePickerPopup" class="date-picker-popup hidden">
@@ -93,11 +103,26 @@
               <div id="datePickerDays" class="date-picker-days"></div>
           </div>
         </div>
-        <div class="field">
-          <label data-i18n="secondPreference">第二希望预约日期、时间</label>
-          <div class="field">
-            <label for="second_date" class="field-sublabel" data-i18n="secondDate">日期</label>
-            <input type="date" id="second_date">
+        <div class="field field-datetime-row">
+          <div class="label-row"><label data-i18n="secondPreference">第二希望预约日期、时间</label></div>
+          <div class="datetime-inputs">
+            <div class="date-picker-wrap">
+              <input type="date" id="second_date">
+              <span class="date-icon">📅</span>
+            </div>
+            <div class="time-input-wrap">
+              <select id="second_hour">
+                <option value="">时</option>
+              </select>
+              <span class="time-sep">:</span>
+              <select id="second_minute">
+                <option value="">分</option>
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="30">30</option>
+                <option value="40">40</option>
+              </select>
+            </div>
           </div>
         </div>
         <div class="row">

@@ -1,12 +1,5 @@
 const API = "";
 
-function roundTimeToTenMinutes(timeStr) {
-  if (!timeStr) return timeStr;
-  const [h, m] = timeStr.split(":").map(Number);
-  const rounded = Math.floor(m / 10) * 10;
-  return `${String(h).padStart(2, "0")}:${String(rounded).padStart(2, "0")}`;
-}
-
 function applyI18n() {
   currentLang = document.getElementById("langSelect").value;
   setLang(currentLang);
@@ -35,6 +28,25 @@ document.addEventListener("DOMContentLoaded", () => {
   const secondDate = document.getElementById("second_date");
   const today = new Date().toISOString().slice(0, 10);
   if (secondDate) secondDate.min = today;
+
+  const hourSelect = document.getElementById("reservation_hour");
+  if (hourSelect) {
+    for (let h = 0; h < 24; h++) {
+      const opt = document.createElement("option");
+      opt.value = String(h).padStart(2, "0");
+      opt.textContent = String(h).padStart(2, "0");
+      hourSelect.appendChild(opt);
+    }
+  }
+  const secondHourSelect = document.getElementById("second_hour");
+  if (secondHourSelect) {
+    for (let h = 0; h < 24; h++) {
+      const opt = document.createElement("option");
+      opt.value = String(h).padStart(2, "0");
+      opt.textContent = String(h).padStart(2, "0");
+      secondHourSelect.appendChild(opt);
+    }
+  }
 
   let pickerYear = new Date().getFullYear();
   let pickerMonth = new Date().getMonth();
@@ -129,12 +141,6 @@ document.addEventListener("DOMContentLoaded", () => {
   renderDatePicker();
 });
 
-document.getElementById("reservation_time").addEventListener("change", function () {
-  this.value = roundTimeToTenMinutes(this.value);
-});
-document.getElementById("reservationTimeWrap")?.addEventListener("click", function () {
-  document.getElementById("reservation_time").showPicker?.();
-});
 document.getElementById("reservationForm").addEventListener("submit", async (e) => {
   e.preventDefault();
   const btn = document.getElementById("submitBtn");
@@ -142,7 +148,9 @@ document.getElementById("reservationForm").addEventListener("submit", async (e) 
   btn.textContent = t("submitting");
 
   const date = document.getElementById("reservation_date").value || document.getElementById("reservation_date").dataset.value;
-  const time = roundTimeToTenMinutes(document.getElementById("reservation_time").value);
+  const hour = document.getElementById("reservation_hour")?.value || "";
+  const minute = document.getElementById("reservation_minute")?.value || "";
+  const time = hour && minute ? `${hour}:${minute}` : "";
   if (!date || !time) {
     alert("请选择预约日期和时间");
     btn.disabled = false;
@@ -156,11 +164,15 @@ document.getElementById("reservationForm").addEventListener("submit", async (e) 
   const guest_phone = (prefix.startsWith("+") ? prefix : prefix ? "+" + prefix : "+86") + number;
 
   const secondDate = document.getElementById("second_date")?.value || "";
+  const secondHour = document.getElementById("second_hour")?.value || "";
+  const secondMinute = document.getElementById("second_minute")?.value || "";
+  const secondTime = secondHour && secondMinute ? `${secondHour}:${secondMinute}` : "";
   const dietaryNotes = document.getElementById("dietary_notes").value.trim();
   const notes = document.getElementById("notes").value.trim();
 
   let fullNotes = "";
-  if (secondDate) fullNotes += `第二希望日期: ${secondDate}\n`;
+  if (secondDate && secondTime) fullNotes += `第二希望日期时间: ${secondDate} ${secondTime}\n`;
+  else if (secondDate) fullNotes += `第二希望日期: ${secondDate}\n`;
   if (dietaryNotes) fullNotes += `饮食忌口: ${dietaryNotes}\n`;
   if (notes) fullNotes += notes;
 

@@ -12,13 +12,14 @@
 }
 .banner-track {
   display: flex;
-  width: 400%;
+  width: 100%;
   overflow-x: auto;
   overflow-y: hidden;
   scroll-snap-type: x mandatory;
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
+  gap: 0;
 }
 .banner-track::-webkit-scrollbar {
   display: none;

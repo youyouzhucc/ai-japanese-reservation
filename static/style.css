@@ -22,14 +22,15 @@
   white-space: nowrap;
 }
 .lang-select {
-  padding: 0.4rem 0.8rem;
-  border: none;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid #dee2e6;
   border-radius: 6px;
-  background: #c45c6a;
-  color: #fff;
+  background: #fff;
+  color: #000;
   font-size: 0.9rem;
   cursor: pointer;
-  min-width: 120px;
+  width: auto;
+  max-width: 100px;
 }
 .lang-select option {
   background: #fff;

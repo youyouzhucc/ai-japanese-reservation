@@ -57,6 +57,9 @@
   align-items: center;
   gap: 0.25rem;
 }
+.time-input-wrap {
+  font-size: 10pt;
+}
 .time-input-wrap select {
   flex: 1;
   min-width: 60px;
@@ -68,10 +71,14 @@
   cursor: pointer;
   background: #fff;
 }
+.time-input-wrap select option {
+  font-size: 10pt;
+}
 .time-input-wrap select option[value=""] {
   color: #999;
 }
 .time-sep {
+  font-size: 10pt;
   font-weight: 600;
   color: #333;
 }

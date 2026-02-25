@@ -109,17 +109,6 @@
             </div>
           </div>
         </div>
-        <div id="datePickerPopup" class="date-picker-popup hidden">
-          <div class="date-picker-header">
-            <button type="button" class="date-nav" id="prevMonth">‹</button>
-            <span id="datePickerMonth">2025年1月</span>
-            <button type="button" class="date-nav" id="nextMonth">›</button>
-          </div>
-          <div class="date-picker-weekdays">
-            <span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span>
-          </div>
-          <div id="datePickerDays" class="date-picker-days"></div>
-        </div>
         <div class="row">
           <div class="field">
             <div class="label-row"><label for="adults" data-i18n="adults">成人人数</label><span class="required">*</span></div>
@@ -153,6 +142,18 @@
     </div>
   </div>
   </main>
+
+  <div id="datePickerPopup" class="date-picker-popup hidden">
+    <div class="date-picker-header">
+      <button type="button" class="date-nav" id="prevMonth">‹</button>
+      <span id="datePickerMonth">2025年1月</span>
+      <button type="button" class="date-nav" id="nextMonth">›</button>
+    </div>
+    <div class="date-picker-weekdays">
+      <span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span>
+    </div>
+    <div id="datePickerDays" class="date-picker-days"></div>
+  </div>
 
   <script src="/static/i18n.js" defer></script>
   <script src="/static/app.js" defer></script>

@@ -31,10 +31,14 @@
 }
 .time-input-wrap {
   font-size: 10pt;
+  position: relative;
+  z-index: 10;
+  touch-action: manipulation;
 }
 .time-input-wrap select {
   flex: 1;
   min-width: 60px;
+  min-height: 40px;
   padding: 0.5rem 0.6rem;
   border: 1px solid #ccc;
   border-radius: 6px;
@@ -44,6 +48,7 @@
   background: #fff;
   appearance: auto;
   -webkit-appearance: menulist;
+  pointer-events: auto;
 }
 .time-input-wrap select option[value=""] {
   color: #999;
@@ -77,6 +82,9 @@
   gap: 0.75rem;
   align-items: center;
   flex-wrap: wrap;
+  position: relative;
+  z-index: 10;
+  isolation: isolate;
 }
 .date-picker-wrap {
   position: relative;
@@ -88,7 +96,9 @@
   border-radius: 8px;
   background: #fff;
   cursor: pointer;
-  overflow: hidden;
+  overflow: visible;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 .date-picker-wrap input {
   flex: 1;
@@ -108,6 +118,8 @@
   padding: 0 0.8rem;
   font-size: 1rem;
   color: #6c757d;
+  pointer-events: auto;
+  flex-shrink: 0;
 }
 .date-picker-popup {
   position: fixed;
@@ -122,6 +134,7 @@
 }
 .field-datetime-row {
   position: relative;
+  z-index: 5;
 }
 .date-picker-popup.hidden {
   display: none;
@@ -267,6 +280,7 @@ body {
   padding: 1.25rem;
   margin-bottom: 1.75rem;
   border: 1px solid #e9ecef;
+  position: relative;
 }
 .form h2 {
   font-size: 1rem;

@@ -9,6 +9,9 @@ pydantic-settings==2.1.0
 python-multipart==0.0.6
 httpx==0.26.0
 
+# Railway PostgreSQL 支持
+asyncpg==0.29.0
+
 # 可选：真实 AI 电话 & 短信
 # twilio==8.11.0
 # openai==1.12.0

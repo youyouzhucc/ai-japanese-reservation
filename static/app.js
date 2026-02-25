@@ -1,16 +1,20 @@
 const API = "";
 
-function setHalfHourStep() {
-  const input = document.getElementById("reservation_datetime");
-  if (!input.value) return;
-  const d = new Date(input.value);
-  const min = d.getMinutes();
-  const rounded = Math.floor(min / 30) * 30;
-  d.setMinutes(rounded, 0, 0);
-  input.value = d.toISOString().slice(0, 16);
+document.addEventListener("DOMContentLoaded", () => {
+  const dateInput = document.getElementById("reservation_date");
+  dateInput.min = new Date().toISOString().slice(0, 10);
+});
+
+function roundTimeToHalfHour(timeStr) {
+  if (!timeStr) return timeStr;
+  const [h, m] = timeStr.split(":").map(Number);
+  const rounded = Math.floor(m / 30) * 30;
+  return `${String(h).padStart(2, "0")}:${String(rounded).padStart(2, "0")}`;
 }
 
-document.getElementById("reservation_datetime").addEventListener("change", setHalfHourStep);
+document.getElementById("reservation_time").addEventListener("change", function () {
+  this.value = roundTimeToHalfHour(this.value);
+});
 
 document.getElementById("reservationForm").addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -18,8 +22,8 @@ document.getElementById("reservationForm").addEventListener("submit", async (e) 
   btn.disabled = true;
   btn.textContent = "提交中...";
 
-  const dt = document.getElementById("reservation_datetime").value;
-  const [date, time] = dt.split("T");
+  const date = document.getElementById("reservation_date").value;
+  const time = roundTimeToHalfHour(document.getElementById("reservation_time").value);
   const reservation_datetime = `${date} ${time}`;
 
   const payload = {

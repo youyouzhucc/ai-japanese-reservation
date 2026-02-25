@@ -56,6 +56,10 @@ header p {
   margin-bottom: 0.4rem;
   color: #495057;
 }
+.field-sublabel {
+  font-size: 0.85rem;
+  color: #6c757d;
+}
 .required { color: #1a1a1a; }
 .field input,
 .field textarea {

@@ -31,14 +31,10 @@
 }
 .time-input-wrap {
   font-size: 10pt;
-  position: relative;
-  z-index: 10;
-  touch-action: manipulation;
 }
-.custom-select {
+.time-input-wrap select {
   flex: 1;
   min-width: 60px;
-  min-height: 40px;
   padding: 0.5rem 0.6rem;
   border: 1px solid #ccc;
   border-radius: 6px;
@@ -46,30 +42,9 @@
   color: #000;
   cursor: pointer;
   background: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.25rem;
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
 }
-.custom-select:hover {
-  border-color: #1890ff;
-}
-.custom-select-label {
-  flex: 1;
-  text-align: left;
-  color: inherit;
-}
-.custom-select-label.empty {
+.time-input-wrap select option[value=""] {
   color: #999;
-}
-.custom-select-arrow {
-  font-size: 0.6rem;
-  color: #666;
-}
-.time-input-wrap input[type="hidden"] {
-  display: none;
 }
 .time-sep {
   font-size: 10pt;
@@ -100,9 +75,6 @@
   gap: 0.75rem;
   align-items: center;
   flex-wrap: wrap;
-  position: relative;
-  z-index: 10;
-  isolation: isolate;
 }
 .date-picker-wrap {
   position: relative;
@@ -114,9 +86,7 @@
   border-radius: 8px;
   background: #fff;
   cursor: pointer;
-  overflow: visible;
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
+  overflow: hidden;
 }
 .date-picker-wrap input {
   flex: 1;
@@ -126,61 +96,19 @@
   min-width: 0;
   font-size: 10pt;
   color: #000;
-  pointer-events: none;
 }
 .date-picker-wrap input::placeholder {
   font-size: 10pt;
   color: #999;
 }
-.date-picker-btn {
-  all: unset;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  -webkit-tap-highlight-color: transparent;
-}
-.date-picker-btn-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  padding: 0 0.8rem;
-  justify-content: flex-end;
-}
-.date-picker-btn:focus-visible {
-  outline: 2px solid #1890ff;
-  outline-offset: 2px;
-}
 .date-icon {
+  padding: 0 0.8rem;
   font-size: 1rem;
   color: #6c757d;
 }
-.time-select-popup {
-  position: fixed;
-  z-index: 10000;
-  background: #fff;
-  border: 1px solid #dee2e6;
-  border-radius: 8px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-  max-height: 200px;
-  overflow-y: auto;
-  min-width: 80px;
-}
-.time-select-popup.hidden {
-  display: none;
-}
-.time-select-option {
-  padding: 0.5rem 0.75rem;
-  cursor: pointer;
-  font-size: 10pt;
-}
-.time-select-option:hover {
-  background: #e6f7ff;
-}
 .date-picker-popup {
   position: fixed;
-  z-index: 9999;
+  z-index: 100;
   margin-top: 0.3rem;
   background: #fff;
   border: 1px solid #dee2e6;
@@ -191,7 +119,6 @@
 }
 .field-datetime-row {
   position: relative;
-  z-index: 5;
 }
 .date-picker-popup.hidden {
   display: none;
@@ -337,7 +264,6 @@ body {
   padding: 1.25rem;
   margin-bottom: 1.75rem;
   border: 1px solid #e9ecef;
-  position: relative;
 }
 .form h2 {
   font-size: 1rem;

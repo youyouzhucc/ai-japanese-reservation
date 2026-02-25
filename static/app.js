@@ -17,62 +17,30 @@ function applyI18n() {
   document.getElementById("checkStatusBtn").textContent = t("refreshStatus");
 }
 
-function initCustomSelect(wrapId, hiddenId, options, placeholder) {
-  const wrap = document.getElementById(wrapId);
-  const hidden = document.getElementById(hiddenId);
-  if (!wrap || !hidden) return;
-  const label = wrap.querySelector(".custom-select-label");
-  const popup = document.getElementById("timeSelectPopup");
-  if (!label || !popup) return;
-
-  function updateLabel(val) {
-    wrap.dataset.value = val;
-    hidden.value = val;
-    if (val) {
-      label.textContent = val;
-      label.classList.remove("empty");
-    } else {
-      label.textContent = placeholder;
-      label.classList.add("empty");
-    }
-  }
-
-  wrap.addEventListener("click", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const rect = wrap.getBoundingClientRect();
-    popup.style.left = rect.left + "px";
-    popup.style.top = (rect.bottom + 4) + "px";
-    popup.style.minWidth = rect.width + "px";
-    popup.innerHTML = "";
-    options.forEach((opt) => {
-      const div = document.createElement("div");
-      div.className = "time-select-option";
-      div.textContent = opt;
-      div.dataset.value = opt;
-      div.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        updateLabel(opt);
-        popup.classList.add("hidden");
-      });
-      popup.appendChild(div);
-    });
-    popup.classList.remove("hidden");
-  });
-}
-
 function initReservationForm() {
   applyI18n();
   const dateInput = document.getElementById("reservation_date");
   const secondDateInput = document.getElementById("second_date");
+  const today = new Date().toISOString().slice(0, 10);
 
-  const hourOpts = Array.from({ length: 24 }, (_, h) => String(h).padStart(2, "0"));
-  const minuteOpts = ["00", "10", "20", "30", "40", "50"];
-  initCustomSelect("reservation_hour_wrap", "reservation_hour", hourOpts, "时");
-  initCustomSelect("reservation_minute_wrap", "reservation_minute", minuteOpts, "分");
-  initCustomSelect("second_hour_wrap", "second_hour", hourOpts, "时");
-  initCustomSelect("second_minute_wrap", "second_minute", minuteOpts, "分");
+  const hourSelect = document.getElementById("reservation_hour");
+  if (hourSelect) {
+    for (let h = 0; h < 24; h++) {
+      const opt = document.createElement("option");
+      opt.value = String(h).padStart(2, "0");
+      opt.textContent = String(h).padStart(2, "0");
+      hourSelect.appendChild(opt);
+    }
+  }
+  const secondHourSelect = document.getElementById("second_hour");
+  if (secondHourSelect) {
+    for (let h = 0; h < 24; h++) {
+      const opt = document.createElement("option");
+      opt.value = String(h).padStart(2, "0");
+      opt.textContent = String(h).padStart(2, "0");
+      secondHourSelect.appendChild(opt);
+    }
+  }
 
   let pickerYear = new Date().getFullYear();
   let pickerMonth = new Date().getMonth();
@@ -94,7 +62,6 @@ function initReservationForm() {
     const rect = anchor.getBoundingClientRect();
     popup.style.top = (rect.bottom + 4) + "px";
     popup.style.left = rect.left + "px";
-    popup.style.display = "block";
     renderDatePicker();
     popup.classList.remove("hidden");
   }
@@ -129,9 +96,7 @@ function initReservationForm() {
       if (dateStr === todayStr) span.classList.add("today");
       const currentVal = editingDateInput?.value || editingDateInput?.dataset?.value;
       if (currentVal === dateStr) span.classList.add("selected");
-      span.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
+      span.addEventListener("click", () => {
         if (span.classList.contains("disabled")) return;
         if (editingDateInput) {
           editingDateInput.value = dateStr;
@@ -153,9 +118,7 @@ function initReservationForm() {
     }
   }
 
-  document.getElementById("openDatePicker").addEventListener("click", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
+  document.getElementById("openDatePicker").addEventListener("click", () => {
     const popup = document.getElementById("datePickerPopup");
     if (popup.classList.contains("hidden")) {
       openDatePicker(dateInput);
@@ -166,9 +129,7 @@ function initReservationForm() {
     }
   });
 
-  document.getElementById("openDatePicker2").addEventListener("click", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
+  document.getElementById("openDatePicker2").addEventListener("click", () => {
     const popup = document.getElementById("datePickerPopup");
     if (popup.classList.contains("hidden")) {
       openDatePicker(secondDateInput);
@@ -179,8 +140,7 @@ function initReservationForm() {
     }
   });
 
-  document.getElementById("prevMonth").addEventListener("click", (e) => {
-    e.preventDefault();
+  document.getElementById("prevMonth").addEventListener("click", () => {
     pickerMonth--;
     if (pickerMonth < 0) {
       pickerMonth = 11;
@@ -189,8 +149,7 @@ function initReservationForm() {
     renderDatePicker();
   });
 
-  document.getElementById("nextMonth").addEventListener("click", (e) => {
-    e.preventDefault();
+  document.getElementById("nextMonth").addEventListener("click", () => {
     pickerMonth++;
     if (pickerMonth > 11) {
       pickerMonth = 0;
@@ -200,16 +159,12 @@ function initReservationForm() {
   });
 
   document.addEventListener("click", (e) => {
-    const datePopup = document.getElementById("datePickerPopup");
-    const timePopup = document.getElementById("timeSelectPopup");
-    const dateOpener1 = document.getElementById("openDatePicker");
-    const dateOpener2 = document.getElementById("openDatePicker2");
-    const dateWrap1 = dateOpener1?.closest(".date-picker-wrap");
-    const dateWrap2 = dateOpener2?.closest(".date-picker-wrap");
-    const inDateArea = datePopup.contains(e.target) || dateOpener1?.contains(e.target) || dateOpener2?.contains(e.target) || dateWrap1?.contains(e.target) || dateWrap2?.contains(e.target);
-    const inTimeArea = timePopup.contains(e.target) || e.target.closest(".custom-select");
-    if (!inDateArea) datePopup.classList.add("hidden");
-    if (!inTimeArea) timePopup.classList.add("hidden");
+    const popup = document.getElementById("datePickerPopup");
+    const opener = document.getElementById("openDatePicker");
+    const opener2 = document.getElementById("openDatePicker2");
+    if (!popup.contains(e.target) && !opener?.contains(e.target) && !opener2?.contains(e.target)) {
+      popup.classList.add("hidden");
+    }
   });
 }
 
@@ -294,7 +249,6 @@ document.getElementById("reservationForm").addEventListener("submit", async (e) 
 async function doPay(order, reservationDatetime) {
   const orderNo = order.order_no;
   const btn = document.getElementById("checkStatusBtn");
-  const resultDiv = document.getElementById("result");
   btn.disabled = true;
   btn.textContent = "支付中...";
   try {

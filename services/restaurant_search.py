@@ -36,47 +36,72 @@ async def search_restaurants(query: str, api_key: str | None = None) -> list[dic
     return results if results else _search_mock(query)
 
 
+OVERPASS_ENDPOINTS = [
+    "https://overpass.kumi.systems/api/interpreter",
+    "https://overpass-api.de/api/interpreter",
+]
+
+
 async def _search_osm(query: str) -> list[dict[str, Any]]:
     """OpenStreetMap Overpass API - 完全免费，无需 API Key。电话覆盖率取决于 OSM 数据"""
     import httpx
 
-    # 转义正则特殊字符，支持按名称搜索
-    safe = re.escape(query[:50])  # 限制长度
-    overpass_url = "https://overpass-api.de/api/interpreter"
-    # 日本范围 bbox (south, west, north, east)，扩展以覆盖主要城市
+    # 转义正则特殊字符，支持按名称搜索；支持日文简繁变体
+    raw = query[:50].strip()
+    if not raw:
+        return []
+    safe = re.escape(raw)
+    # 日本范围 bbox (south, west, north, east)
     bbox = "(24.0,122.0,46.0,154.0)"
-    body = f"""
-[out:json][timeout:15];
+    # Overpass: bbox(south,west,north,east) 在前，tag 过滤在后
+    body = f"""[out:json][timeout:15];
 (
-  node["amenity"~"restaurant|cafe|fast_food"]{bbox}["name"~"{safe}",i];
-  way["amenity"~"restaurant|cafe|fast_food"]{bbox}["name"~"{safe}",i];
+  node{bbox}["amenity"~"restaurant|cafe|fast_food"]["name"~"{safe}",i];
+  way{bbox}["amenity"~"restaurant|cafe|fast_food"]["name"~"{safe}",i];
 );
 out body;
 """
-    try:
-        async with httpx.AsyncClient(timeout=20) as client:
-            resp = await client.post(overpass_url, content=body)
-            data = resp.json()
-    except Exception:
+    data = None
+    for url in OVERPASS_ENDPOINTS:
+        try:
+            async with httpx.AsyncClient(timeout=25) as client:
+                resp = await client.post(url, content=body)
+                resp.raise_for_status()
+                data = resp.json()
+                break
+        except Exception:
+            continue
+    if not data:
         return []
 
     elements = data.get("elements", [])
     results = []
     seen = set()
-    for el in elements[:12]:
+    for el in elements[:15]:
         tags = el.get("tags", {})
-        name = tags.get("name", "").strip()
+        name = (
+            tags.get("name")
+            or tags.get("name:ja")
+            or tags.get("name:en")
+            or ""
+        ).strip()
         if not name or name in seen:
             continue
         seen.add(name)
-        phone = tags.get("phone") or tags.get("contact:phone") or tags.get("contact:phone_1") or ""
+        phone = (
+            tags.get("phone")
+            or tags.get("contact:phone")
+            or tags.get("contact:phone_1")
+            or tags.get("contact:mobile")
+            or ""
+        )
         addr_parts = [
+            tags.get("addr:prefecture"),
+            tags.get("addr:city") or tags.get("addr:town") or tags.get("addr:village"),
             tags.get("addr:street"),
             tags.get("addr:housenumber"),
-            tags.get("addr:city") or tags.get("addr:town"),
-            tags.get("addr:country"),
         ]
-        address = " ".join(p for p in addr_parts if p) or tags.get("addr:full", "")
+        address = " ".join(str(p) for p in addr_parts if p) or tags.get("addr:full", "")
         results.append({"name": name, "phone": phone, "address": address})
     return results[:8]
 

@@ -17,8 +17,77 @@ function applyI18n() {
   document.getElementById("checkStatusBtn").textContent = t("refreshStatus");
 }
 
+function initRestaurantSearch() {
+  const searchInput = document.getElementById("restaurant_search");
+  const searchBtn = document.getElementById("restaurantSearchBtn");
+  const resultsEl = document.getElementById("restaurantSearchResults");
+  const nameInput = document.getElementById("restaurant_name");
+  const phoneInput = document.getElementById("restaurant_phone");
+
+  async function doSearch() {
+    const q = searchInput.value.trim();
+    if (!q) {
+      resultsEl.classList.add("hidden");
+      return;
+    }
+    try {
+      const res = await fetch(`${API}/api/restaurants/search?q=${encodeURIComponent(q)}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      const list = data.results || [];
+      resultsEl.innerHTML = "";
+      if (list.length === 0) {
+        const empty = document.createElement("div");
+        empty.className = "search-result-item";
+        empty.textContent = "未找到相关餐厅";
+        empty.style.color = "#999";
+        resultsEl.appendChild(empty);
+      } else {
+        list.forEach((r) => {
+          const div = document.createElement("div");
+          div.className = "search-result-item";
+          div.innerHTML =
+            `<span class="name">${escapeHtml(r.name)}</span>` +
+            (r.phone ? `<div class="phone">${escapeHtml(r.phone)}</div>` : "") +
+            (r.address ? `<div class="address">${escapeHtml(r.address)}</div>` : "");
+          div.addEventListener("click", () => {
+            nameInput.value = r.name;
+            if (r.phone) phoneInput.value = r.phone;
+            resultsEl.classList.add("hidden");
+            searchInput.value = "";
+          });
+          resultsEl.appendChild(div);
+        });
+      }
+      resultsEl.classList.remove("hidden");
+    } catch {
+      resultsEl.classList.add("hidden");
+    }
+  }
+
+  function escapeHtml(s) {
+    const div = document.createElement("div");
+    div.textContent = s;
+    return div.innerHTML;
+  }
+
+  searchBtn.addEventListener("click", doSearch);
+  searchInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      doSearch();
+    }
+  });
+  document.addEventListener("click", (e) => {
+    if (!searchInput.contains(e.target) && !searchBtn.contains(e.target) && !resultsEl.contains(e.target)) {
+      resultsEl.classList.add("hidden");
+    }
+  });
+}
+
 function initReservationForm() {
   applyI18n();
+  initRestaurantSearch();
   const dateInput = document.getElementById("reservation_date");
   const secondDateInput = document.getElementById("second_date");
   const today = new Date().toISOString().slice(0, 10);

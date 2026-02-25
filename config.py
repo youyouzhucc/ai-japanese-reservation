@@ -24,6 +24,8 @@ class Settings(BaseSettings):
     twilio_auth_token: str = ""
     twilio_phone_number: str = ""
     openai_api_key: str = ""
+    # 餐厅搜索（可选，配置后使用 Google Places API）
+    google_places_api_key: str = ""
     # 阿里云短信
     aliyun_access_key: str = ""
     aliyun_access_secret: str = ""

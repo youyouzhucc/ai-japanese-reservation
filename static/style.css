@@ -22,6 +22,71 @@
   flex: 1;
   min-width: 0;
 }
+.restaurant-search-wrap {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+.restaurant-search-wrap input {
+  flex: 1;
+  padding: 0.6rem 1rem;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  font-size: 10pt;
+}
+.search-btn {
+  width: auto !important;
+  padding: 0.6rem 1rem !important;
+  flex-shrink: 0;
+}
+.restaurant-search-field {
+  position: relative;
+}
+.search-results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 4px;
+  z-index: 100;
+  background: #fff;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  max-height: 240px;
+  overflow-y: auto;
+  min-width: 280px;
+}
+.search-results.hidden {
+  display: none;
+}
+.search-result-item {
+  padding: 0.6rem 1rem;
+  cursor: pointer;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 10pt;
+}
+.search-result-item:last-child {
+  border-bottom: none;
+}
+.search-result-item:hover {
+  background: #e6f7ff;
+}
+.search-result-item .name {
+  font-weight: 600;
+  color: #1a1a1a;
+}
+.search-result-item .phone {
+  color: #1890ff;
+  font-size: 0.9rem;
+  margin-top: 0.2rem;
+}
+.search-result-item .address {
+  color: #666;
+  font-size: 0.85rem;
+  margin-top: 0.1rem;
+}
 .datetime-inputs .time-input-wrap {
   flex: 1;
   min-width: 120px;

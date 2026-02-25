@@ -30,6 +30,7 @@ from config import settings
 from models import Reservation, ReservationStatus, get_engine, get_session_maker, init_db
 from schemas import ReservationCreate, ReservationResponse, PaymentRequest, PaymentResponse, CallbackRequest, ReservationStatusUpdate
 from services import create_payment, initiate_call, send_reservation_sms
+from services.restaurant_search import search_restaurants
 from services.payment import verify_alipay_notify
 
 engine = get_engine(settings.database_url)
@@ -214,6 +215,13 @@ async def callback_ai_call(req: CallbackRequest, db=Depends(get_db)):
         r.restaurant_name, r.reservation_datetime,
     )
     return {"ok": True}
+
+
+@app.get("/api/restaurants/search")
+async def restaurant_search(q: str = ""):
+    """搜索餐厅，返回名称、电话、地址。有电话时前端可自动填充"""
+    results = await search_restaurants(q, settings.google_places_api_key or None)
+    return {"results": results}
 
 
 @app.get("/api/reservations/{order_no}", response_model=ReservationResponse)

@@ -28,6 +28,14 @@
     <form id="reservationForm" class="form">
       <section>
         <h2 data-i18n="restaurant">餐厅信息</h2>
+        <div class="field restaurant-search-field">
+          <div class="label-row"><label for="restaurant_search" data-i18n="restaurantSearch">搜索餐厅</label></div>
+          <div class="restaurant-search-wrap">
+            <input type="text" id="restaurant_search" data-placeholder="restaurantSearchPlaceholder" autocomplete="off">
+            <button type="button" class="search-btn" id="restaurantSearchBtn" aria-label="搜索">🔍</button>
+          </div>
+          <div id="restaurantSearchResults" class="search-results hidden"></div>
+        </div>
         <div class="field">
           <div class="label-row"><label for="restaurant_name" data-i18n="restaurantName">餐厅名称</label><span class="required">*</span></div>
           <input type="text" id="restaurant_name" required data-placeholder="exampleRestaurant">

@@ -1,0 +1,138 @@
+* {
+  box-sizing: border-box;
+}
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  color: #e8e8e8;
+  min-height: 100vh;
+  margin: 0;
+  padding: 2rem;
+}
+.container {
+  max-width: 560px;
+  margin: 0 auto;
+}
+header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+header h1 {
+  font-size: 1.8rem;
+  margin: 0 0 0.5rem;
+  background: linear-gradient(90deg, #e94560, #ff6b6b);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+header p {
+  color: #a0a0a0;
+  font-size: 0.95rem;
+}
+.form section {
+  background: rgba(255,255,255,0.05);
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+.form h2 {
+  font-size: 1rem;
+  color: #e94560;
+  margin: 0 0 1rem;
+  font-weight: 600;
+}
+.field {
+  margin-bottom: 1rem;
+}
+.field:last-child {
+  margin-bottom: 0;
+}
+.field label {
+  display: block;
+  font-size: 0.9rem;
+  margin-bottom: 0.4rem;
+  color: #c0c0c0;
+}
+.required { color: #e94560; }
+.field input,
+.field textarea {
+  width: 100%;
+  padding: 0.7rem 1rem;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 8px;
+  background: rgba(0,0,0,0.2);
+  color: #fff;
+  font-size: 1rem;
+}
+.field input::placeholder,
+.field textarea::placeholder {
+  color: #666;
+}
+.field small {
+  display: block;
+  margin-top: 0.3rem;
+  font-size: 0.8rem;
+  color: #888;
+}
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+.actions {
+  margin-top: 1.5rem;
+}
+button {
+  width: 100%;
+  padding: 0.9rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  background: linear-gradient(135deg, #e94560, #ff6b6b);
+  color: #fff;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(233,69,96,0.4);
+}
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+button.secondary {
+  background: rgba(255,255,255,0.1);
+  margin-top: 0.8rem;
+}
+.result {
+  background: rgba(255,255,255,0.08);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-top: 1.5rem;
+}
+.result.hidden {
+  display: none;
+}
+.result h3 {
+  margin: 0 0 1rem;
+  font-size: 1.1rem;
+}
+#orderInfo {
+  font-family: monospace;
+  font-size: 0.9rem;
+  background: rgba(0,0,0,0.3);
+  padding: 1rem;
+  border-radius: 8px;
+  white-space: pre-wrap;
+  margin-bottom: 1rem;
+}
+#statusMsg {
+  color: #a0a0a0;
+  font-size: 0.95rem;
+}
+.status-reserving { color: #ffc107; }
+.status-success { color: #4caf50; }
+.status-failed { color: #f44336; }

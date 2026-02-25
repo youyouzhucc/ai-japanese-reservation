@@ -102,37 +102,54 @@ async def pay(req: PaymentRequest, db=Depends(get_db)):
 
 
 async def _run_ai_call_and_notify(reservation_id: int):
-    """后台：AI 打电话 -> 更新状态 -> 发短信"""
+    """后台：AI 打电话 -> 更新状态 -> 发短信。仅当真实通话返回结果时更新为成功/失败"""
     from sqlalchemy import select
-    async with SessionLocal() as db:
-        result = await db.execute(select(Reservation).where(Reservation.id == reservation_id))
-        r = result.scalar_one_or_none()
-        if not r:
-            return
-        call_result = await initiate_call(
-            r.order_no, r.restaurant_phone, r.restaurant_name,
-            r.guest_name, r.guest_phone, r.reservation_datetime,
-            r.adults, r.children, r.notes,
-        )
-        r.ai_call_sid = call_result.get("call_sid", "")
-        # 模拟模式直接成功；真实模式需通过 webhook 回调更新
-        if call_result.get("status") == "simulated":
-            r.status = ReservationStatus.SUCCESS.value
-            r.ai_call_result = "模拟预约成功"
-        else:
-            r.ai_call_result = str(call_result)
-        await db.commit()
-        await db.refresh(r)
-        # ④ 发短信
-        ok = await send_reservation_sms(
-            r.guest_phone, r.order_no,
-            r.status == ReservationStatus.SUCCESS.value,
-            r.restaurant_name, r.reservation_datetime,
-        )
-        if ok:
-            r.sms_sent = True
-            r.sms_sent_at = datetime.utcnow()
+    try:
+        async with SessionLocal() as db:
+            result = await db.execute(select(Reservation).where(Reservation.id == reservation_id))
+            r = result.scalar_one_or_none()
+            if not r:
+                return
+            call_result = await initiate_call(
+                r.order_no, r.restaurant_phone, r.restaurant_name,
+                r.guest_name, r.guest_phone, r.reservation_datetime,
+                r.adults, r.children, r.notes,
+            )
+            r.ai_call_sid = call_result.get("call_sid", "")
+            status = call_result.get("status", "")
+            # 仅真实通话返回结果时更新状态；模拟模式保持预约中
+            if status == "simulated":
+                r.ai_call_result = "模拟模式：未实际拨打电话，状态保持预约中"
+                # 保持 status = reserving，不改为 success
+            elif status == "error":
+                r.status = ReservationStatus.FAILED.value
+                r.ai_call_result = call_result.get("error", str(call_result))
+            elif status == "initiated":
+                r.ai_call_result = "已发起通话，等待 webhook 回调"
+                # 保持 status = reserving，由 callback 更新
+            else:
+                r.ai_call_result = str(call_result)
             await db.commit()
+            await db.refresh(r)
+            # 发短信（仅成功时）
+            if r.status == ReservationStatus.SUCCESS.value:
+                ok = await send_reservation_sms(
+                    r.guest_phone, r.order_no,
+                    True,
+                    r.restaurant_name, r.reservation_datetime,
+                )
+                if ok:
+                    r.sms_sent = True
+                    r.sms_sent_at = datetime.utcnow()
+                    await db.commit()
+    except Exception as e:
+        async with SessionLocal() as db:
+            result = await db.execute(select(Reservation).where(Reservation.id == reservation_id))
+            r = result.scalar_one_or_none()
+            if r:
+                r.status = ReservationStatus.FAILED.value
+                r.ai_call_result = f"系统异常: {e}"
+                await db.commit()
 
 
 @app.post("/api/callback/call")

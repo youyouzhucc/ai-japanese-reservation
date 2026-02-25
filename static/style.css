@@ -18,7 +18,7 @@
   right: 0;
   bottom: 0;
   background: url("/static/images/bg-pattern.png") repeat;
-  opacity: 0.3;
+  opacity: 0.1;
   pointer-events: none;
   z-index: -1;
 }

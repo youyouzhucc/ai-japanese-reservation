@@ -232,10 +232,12 @@ document.getElementById("reservationForm").addEventListener("submit", async (e) 
     }
     const order = await res.json();
     document.getElementById("result").classList.remove("hidden");
-    document.getElementById("orderInfo").textContent = `订单号：${order.order_no}\n餐厅：${order.restaurant_name}\n预约时间：${reservation_datetime}\n状态：预约中`;
-    document.getElementById("statusMsg").textContent = t("statusReserving");
+    document.getElementById("orderInfo").textContent =
+      `订单号：${order.order_no}\n餐厅：${order.restaurant_name}\n预约时间：${reservation_datetime}\n状态：待支付\n金额：1元`;
+    document.getElementById("statusMsg").textContent = "请完成支付，支付成功后 AI 将自动致电餐厅完成预约";
     document.getElementById("statusMsg").className = "status-reserving";
-    document.getElementById("checkStatusBtn").onclick = () => checkStatus(order.order_no);
+    document.getElementById("checkStatusBtn").textContent = "去支付";
+    document.getElementById("checkStatusBtn").onclick = () => doPay(order, reservation_datetime);
   } catch (err) {
     alert(err.message || "提交失败");
   } finally {
@@ -243,6 +245,36 @@ document.getElementById("reservationForm").addEventListener("submit", async (e) 
     btn.textContent = t("submit");
   }
 });
+
+async function doPay(order, reservationDatetime) {
+  const orderNo = order.order_no;
+  const btn = document.getElementById("checkStatusBtn");
+  btn.disabled = true;
+  btn.textContent = "支付中...";
+  try {
+    const res = await fetch(`${API}/api/pay`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ order_no: orderNo, amount_cents: 100 }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || res.statusText);
+    }
+    const payResult = await res.json();
+    if (!payResult.success) throw new Error(payResult.message || "支付失败");
+    document.getElementById("orderInfo").textContent =
+      `订单号：${orderNo}\n餐厅：${order.restaurant_name}\n预约时间：${reservationDatetime}\n状态：预约中`;
+    document.getElementById("statusMsg").textContent = t("statusReserving");
+    btn.textContent = t("refreshStatus");
+    btn.disabled = false;
+    btn.onclick = () => checkStatus(orderNo);
+  } catch (err) {
+    alert(err.message || "支付失败");
+    btn.disabled = false;
+    btn.textContent = "去支付";
+  }
+}
 
 async function checkStatus(orderNo) {
   try {

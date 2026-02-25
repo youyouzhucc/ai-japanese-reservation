@@ -70,7 +70,6 @@
 
       <section>
         <h2 data-i18n="reservationDetail">预约详情</h2>
-        <p class="busy-note" data-i18n="busyTimeNote">※ 12:30 为繁忙时段，恕不接受预约。</p>
         <div class="field">
           <div class="label-row"><label data-i18n="reservationDate">预约日期</label><span class="required">*</span></div>
           <div class="date-picker-wrap">
@@ -89,10 +88,11 @@
             </div>
           </div>
         </div>
-        <div class="field">
+        <div class="field field-inline">
           <div class="label-row"><label for="reservation_time" data-i18n="reservationTime">预约时间</label><span class="required">*</span></div>
-          <input type="time" id="reservation_time" required step="600">
-          <small data-i18n="timeHint">时间为十分钟整点（如 18:00、18:10、18:20）</small>
+          <div class="time-input-wrap" id="reservationTimeWrap">
+            <input type="time" id="reservation_time" required step="600">
+          </div>
         </div>
         <div class="field checkbox-field">
           <div class="label-row label-row-inline">
@@ -105,15 +105,9 @@
         </div>
         <div class="field">
           <label data-i18n="secondPreference">第二希望预约日期、时间</label>
-          <div class="row">
-            <div class="field">
-              <label for="second_date" class="field-sublabel" data-i18n="secondDate">日期</label>
-              <input type="date" id="second_date">
-            </div>
-            <div class="field">
-              <label for="second_time" class="field-sublabel" data-i18n="secondTime">时间</label>
-              <input type="time" id="second_time" step="600">
-            </div>
+          <div class="field">
+            <label for="second_date" class="field-sublabel" data-i18n="secondDate">日期</label>
+            <input type="date" id="second_date">
           </div>
         </div>
         <div class="row">

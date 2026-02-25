@@ -34,13 +34,32 @@
   background: #fff;
   color: #333;
 }
-.busy-note {
-  color: #c00;
-  font-size: 0.85rem;
-  margin: -0.5rem 0 0.8rem;
-}
 .phone-row {
   grid-template-columns: 100px 1fr;
+}
+.field-inline .label-row {
+  display: inline-flex;
+  margin-bottom: 0;
+  margin-right: 0.5rem;
+  flex: 0 0 auto;
+}
+.field-inline .time-input-wrap {
+  flex: 1;
+  min-width: 120px;
+}
+.field-inline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+.time-input-wrap {
+  cursor: pointer;
+}
+.time-input-wrap input {
+  width: 100%;
+  min-width: 120px;
+  cursor: pointer;
 }
 .checkbox-field {
   margin-top: 1rem;

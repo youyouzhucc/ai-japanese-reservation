@@ -131,13 +131,9 @@ document.addEventListener("DOMContentLoaded", () => {
 document.getElementById("reservation_time").addEventListener("change", function () {
   this.value = roundTimeToTenMinutes(this.value);
 });
-const secondTimeEl = document.getElementById("second_time");
-if (secondTimeEl) {
-  secondTimeEl.addEventListener("change", function () {
-    this.value = roundTimeToTenMinutes(this.value);
-  });
-}
-
+document.getElementById("reservationTimeWrap")?.addEventListener("click", function () {
+  document.getElementById("reservation_time").showPicker?.();
+});
 document.getElementById("reservationForm").addEventListener("submit", async (e) => {
   e.preventDefault();
   const btn = document.getElementById("submitBtn");
@@ -159,15 +155,13 @@ document.getElementById("reservationForm").addEventListener("submit", async (e) 
   const guest_phone = (prefix.startsWith("+") ? prefix : prefix ? "+" + prefix : "+86") + number;
 
   const timeAdjustable = document.querySelector('input[name="time_adjustable"]:checked').value === "yes";
-  const secondDate = document.getElementById("second_date").value;
-  const secondTime = roundTimeToTenMinutes(document.getElementById("second_time").value);
-  const secondPreference = secondDate && secondTime ? `${secondDate} ${secondTime}` : "";
+  const secondDate = document.getElementById("second_date")?.value || "";
   const dietaryNotes = document.getElementById("dietary_notes").value.trim();
   const notes = document.getElementById("notes").value.trim();
 
   let fullNotes = "";
   if (timeAdjustable) fullNotes += "时间可调整: 是\n";
-  if (secondPreference) fullNotes += `第二希望: ${secondPreference}\n`;
+  if (secondDate) fullNotes += `第二希望日期: ${secondDate}\n`;
   if (dietaryNotes) fullNotes += `饮食忌口: ${dietaryNotes}\n`;
   if (notes) fullNotes += notes;
 

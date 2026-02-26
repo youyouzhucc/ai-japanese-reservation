@@ -341,9 +341,16 @@ body {
   flex-shrink: 0;
 }
 .form-header-nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
   color: #1a1a1a;
   font-size: 10pt;
   text-decoration: none;
+}
+.form-header-nav-link .nav-icon {
+  font-size: 1em;
+  line-height: 1;
 }
 .form-header-nav-link:hover {
   color: #1a1a1a;

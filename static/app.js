@@ -287,28 +287,6 @@ function hideLoginModal() {
   document.getElementById("loginModal").classList.add("hidden");
 }
 
-function initAuthGate() {
-  const form = document.getElementById("reservationForm");
-  if (!form) return;
-  form.addEventListener("click", (e) => {
-    if (getToken()) return;
-    const target = e.target;
-    const isAuthInput =
-      target.matches("input, select, textarea") ||
-      target.closest(".date-picker-wrap") ||
-      target.closest(".search-btn") ||
-      target.closest(".restaurant-search-wrap");
-    if (isAuthInput) {
-      e.preventDefault();
-      e.stopPropagation();
-      if (document.activeElement && document.activeElement !== document.body) {
-        document.activeElement.blur();
-      }
-      showLoginModal();
-    }
-  }, true);
-}
-
 function initLoginModal() {
   const modal = document.getElementById("loginModal");
   const sendBtn = document.getElementById("sendCodeBtn");
@@ -396,14 +374,12 @@ if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", () => {
     initReservationForm();
     initLoginModal();
-    initAuthGate();
     initHeaderNavLinks();
     updateAuthUI();
   });
 } else {
   initReservationForm();
   initLoginModal();
-  initAuthGate();
   initHeaderNavLinks();
   updateAuthUI();
 }

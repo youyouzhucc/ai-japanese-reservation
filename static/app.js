@@ -294,17 +294,22 @@ function hideLoginModal() {
 function initAuthGate() {
   const form = document.getElementById("reservationForm");
   if (!form) return;
-  const authInputs = form.querySelectorAll(
-    "input, select, textarea, .date-picker-wrap, .restaurant-search-wrap input, .search-btn"
-  );
-  authInputs.forEach((el) => {
-    el.addEventListener("mousedown", (e) => {
-      if (getToken()) return;
+  form.addEventListener("click", (e) => {
+    if (getToken()) return;
+    const target = e.target;
+    const isAuthInput =
+      target.matches("input, select, textarea") ||
+      target.closest(".date-picker-wrap") ||
+      target.closest(".search-btn");
+    if (isAuthInput) {
       e.preventDefault();
-      el.blur?.();
+      e.stopPropagation();
+      if (document.activeElement && document.activeElement !== document.body) {
+        document.activeElement.blur();
+      }
       showLoginModal();
-    });
-  });
+    }
+  }, true);
 }
 
 function initLoginModal() {

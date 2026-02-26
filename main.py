@@ -93,7 +93,10 @@ def _parse_datetime(s: str) -> datetime:
 @app.get("/api/auth/sms-status")
 async def auth_sms_status():
     """调试用：检查短信配置是否生效（不暴露密钥）"""
+    import os
     from config import settings
+    env_vars = ["ALIYUN_ACCESS_KEY", "ALIYUN_ACCESS_SECRET", "ALIYUN_SMS_SIGN_NAME", "ALIYUN_SMS_VERIFY_TEMPLATE_CODE", "ALIYUN_SMS_MODE"]
+    env_present = {k: k in os.environ and bool(os.environ.get(k)) for k in env_vars}
     has_key = bool(settings.aliyun_access_key and settings.aliyun_access_secret)
     has_template = bool(getattr(settings, "aliyun_sms_verify_template_code", ""))
     mode = getattr(settings, "aliyun_sms_mode", "").lower()
@@ -103,6 +106,8 @@ async def auth_sms_status():
         "using_dypnsapi": mode == "dypnsapi",
         "sign_name": settings.aliyun_sms_sign_name or "(未设置)",
         "template_code": settings.aliyun_sms_verify_template_code or "(未设置)",
+        "env_in_process": env_present,
+        "hint": "若 env_in_process 全为 false，请 Redeploy 或检查变量是否加在正确服务上",
     }
 
 

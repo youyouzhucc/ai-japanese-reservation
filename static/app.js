@@ -260,15 +260,23 @@ function initReservationForm() {
 }
 
 function updateAuthUI() {
-  const token = getToken();
+  // 我的账号、我的预约始终显示；未登录时点击会弹出登录
+}
+
+function initHeaderNavLinks() {
   const myAccountLink = document.getElementById("myAccountLink");
   const myReservationsLink = document.getElementById("myReservationsLink");
-  if (token) {
-    if (myAccountLink) myAccountLink.classList.remove("hidden");
-    if (myReservationsLink) myReservationsLink.classList.remove("hidden");
-  } else {
-    if (myAccountLink) myAccountLink.classList.add("hidden");
-    if (myReservationsLink) myReservationsLink.classList.add("hidden");
+  function handleNavClick(e, href) {
+    if (!getToken()) {
+      e.preventDefault();
+      showLoginModal();
+    }
+  }
+  if (myAccountLink) {
+    myAccountLink.addEventListener("click", (e) => handleNavClick(e, "/my-account"));
+  }
+  if (myReservationsLink) {
+    myReservationsLink.addEventListener("click", (e) => handleNavClick(e, "/my-reservations"));
   }
 }
 
@@ -389,6 +397,7 @@ if (document.readyState === "loading") {
     initReservationForm();
     initLoginModal();
     initAuthGate();
+    initHeaderNavLinks();
     updateAuthUI();
     if (new URLSearchParams(location.search).get("login") === "1") showLoginModal();
   });
@@ -396,6 +405,7 @@ if (document.readyState === "loading") {
   initReservationForm();
   initLoginModal();
   initAuthGate();
+  initHeaderNavLinks();
   updateAuthUI();
   if (new URLSearchParams(location.search).get("login") === "1") showLoginModal();
 }

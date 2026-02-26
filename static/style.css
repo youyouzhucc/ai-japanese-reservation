@@ -322,22 +322,32 @@ body {
 .form-header {
   margin-bottom: 2rem;
 }
-.form-header-main {
+.form-header-title-row {
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: flex-start;
   gap: 1rem;
   flex-wrap: wrap;
-}
-.form-header-nav {
-  display: flex;
-  gap: 1rem;
-  flex-shrink: 0;
 }
 .form-header h1 {
   font-size: 1.8rem;
   margin: 0 0 0.5rem;
   color: #1a1a1a;
+}
+.form-header-nav {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+.form-header-nav-link {
+  color: #1a1a1a;
+  font-size: 12pt;
+  text-decoration: none;
+}
+.form-header-nav-link:hover {
+  color: #1890ff;
+  text-decoration: underline;
 }
 .form-header p {
   color: #666;

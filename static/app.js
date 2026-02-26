@@ -399,7 +399,6 @@ if (document.readyState === "loading") {
     initAuthGate();
     initHeaderNavLinks();
     updateAuthUI();
-    if (new URLSearchParams(location.search).get("login") === "1") showLoginModal();
   });
 } else {
   initReservationForm();
@@ -407,7 +406,6 @@ if (document.readyState === "loading") {
   initAuthGate();
   initHeaderNavLinks();
   updateAuthUI();
-  if (new URLSearchParams(location.search).get("login") === "1") showLoginModal();
 }
 
 document.getElementById("reservationForm").addEventListener("submit", async (e) => {

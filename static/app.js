@@ -313,12 +313,12 @@ function initLoginModal() {
   const modal = document.getElementById("loginModal");
   const sendBtn = document.getElementById("sendCodeBtn");
   const submitBtn = document.getElementById("loginSubmitBtn");
-  const cancelBtn = document.getElementById("loginCancelBtn");
+  const closeBtn = document.getElementById("loginModalCloseBtn");
   const phoneInput = document.getElementById("login_phone");
   const codeInput = document.getElementById("login_code");
 
   modal.querySelector(".modal-backdrop").addEventListener("click", hideLoginModal);
-  cancelBtn.addEventListener("click", hideLoginModal);
+  if (closeBtn) closeBtn.addEventListener("click", hideLoginModal);
 
   modal.addEventListener("click", async (e) => {
     if (e.target.id !== "sendCodeBtn" && !e.target.closest("#sendCodeBtn")) return;

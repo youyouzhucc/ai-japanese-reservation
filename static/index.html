@@ -172,7 +172,6 @@
   <div id="loginModal" class="modal hidden">
     <div class="modal-backdrop"></div>
     <div class="modal-content login-modal-content">
-      <button type="button" id="loginModalCloseBtn" class="modal-close-btn" aria-label="关闭">×</button>
       <h3>手机号登录 / 注册</h3>
       <p class="modal-hint">预约前请先登录，新用户验证手机号即完成注册</p>
       <div class="field">
@@ -186,13 +185,14 @@
           <button type="button" id="sendCodeBtn" class="code-btn">获取验证码</button>
         </div>
       </div>
-      <div class="modal-actions">
+      <div class="modal-actions login-modal-actions">
+        <button type="button" id="loginModalCloseBtn" class="login-close-btn">关闭</button>
         <button type="button" id="loginSubmitBtn" class="login-submit-btn">登录</button>
       </div>
     </div>
   </div>
 
   <script src="/static/i18n.js" defer></script>
-  <script src="/static/app.js?v=4" defer></script>
+  <script src="/static/app.js?v=5" defer></script>
 </body>
 </html>

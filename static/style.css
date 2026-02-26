@@ -597,22 +597,38 @@ button.secondary {
 .modal-content.login-modal-content {
   position: relative;
 }
-.modal-close-btn {
-  position: absolute;
-  top: 0.75rem;
-  right: 0.75rem;
-  width: 2rem;
-  height: 2rem;
-  padding: 0;
-  border: none;
-  background: transparent;
-  font-size: 1.5rem;
-  line-height: 1;
-  color: #666;
+.login-modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+.login-close-btn {
+  flex: 1;
+  padding: 0.6rem 1rem;
+  background: #fff;
+  color: #1a1a1a;
+  border: 1px solid #adb5bd;
+  border-radius: 8px;
+  font-size: 10pt;
   cursor: pointer;
 }
-.modal-close-btn:hover {
+.login-close-btn:hover {
+  background: #f8f9fa;
+  border-color: #6c757d;
+}
+.login-submit-btn {
+  flex: 2;
+  padding: 0.6rem 1rem;
+  background: #fff;
   color: #1a1a1a;
+  border: 1px solid #adb5bd;
+  border-radius: 8px;
+  font-size: 10pt;
+  cursor: pointer;
+}
+.login-submit-btn:hover {
+  background: #f8f9fa;
+  border-color: #6c757d;
 }
 .login-input {
   padding: 0.7rem 1rem !important;
@@ -656,7 +672,4 @@ button.secondary {
 }
 .modal-actions button {
   flex: 1;
-}
-.login-submit-btn {
-  padding: 0.4rem 1rem !important;
 }

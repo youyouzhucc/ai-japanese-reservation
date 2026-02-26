@@ -331,6 +331,14 @@ body {
   color: #666;
   font-size: 0.95rem;
 }
+.form-header-link {
+  color: #1890ff;
+  text-decoration: none;
+  margin-left: 0.5rem;
+}
+.form-header-link:hover {
+  text-decoration: underline;
+}
 .form section {
   background: #f8f9fa;
   border-radius: 10px;
@@ -496,16 +504,11 @@ button.secondary {
 .top-nav {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   padding: 0.75rem 1.5rem;
   background: #fff;
   border-bottom: 1px solid #e9ecef;
   margin: -2rem -2rem 1.5rem -2rem;
-}
-.nav-brand {
-  font-weight: 600;
-  color: #1a1a1a;
-  text-decoration: none;
 }
 .nav-right {
   display: flex;

@@ -268,7 +268,7 @@ function updateAuthUI() {
   if (token) {
     loginBtn.classList.add("hidden");
     logoutBtn.classList.remove("hidden");
-    myLink.classList.remove("hidden");
+    if (myLink) myLink.classList.remove("hidden");
     userInfo.classList.remove("hidden");
     fetch(`${API}/api/auth/me`, { headers: getAuthHeaders() })
       .then((r) => (r.ok ? r.json() : null))
@@ -279,7 +279,7 @@ function updateAuthUI() {
   } else {
     loginBtn.classList.remove("hidden");
     logoutBtn.classList.add("hidden");
-    myLink.classList.add("hidden");
+    if (myLink) myLink.classList.add("hidden");
     userInfo.classList.add("hidden");
   }
 }

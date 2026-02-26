@@ -36,6 +36,8 @@ class Settings(BaseSettings):
     aliyun_sms_sign_name: str = ""
     aliyun_sms_template_code: str = ""
     aliyun_sms_verify_template_code: str = ""  # 验证码模板（登录/注册用）
+    aliyun_sms_mode: str = ""  # dysmsapi=短信服务, dypnsapi=融合认证套餐包（号码认证）
+    aliyun_pnvs_instance_id: str = ""  # 融合认证实例资源ID（控制台可见，如 dypns_omniVerifySolution_public_cn-xxx）
 
     class Config:
         env_file = ".env"

@@ -18,6 +18,11 @@ python-alipay-sdk==3.4.0
 # JWT 登录认证
 PyJWT==2.8.0
 
+# 阿里云短信（验证码 + 预约通知）
+alibabacloud-dysmsapi20170525>=3.0.0
+# 阿里云融合认证套餐包（号码认证服务）
+alibabacloud-dypnsapi20170525>=2.0.0
+
 # 可选：真实 AI 电话 & 短信
 # twilio==8.11.0
 # openai==1.12.0

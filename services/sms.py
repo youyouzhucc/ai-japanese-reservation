@@ -1,6 +1,19 @@
 """短信通知服务"""
+import asyncio
 from datetime import datetime
 from config import settings
+
+
+def _normalize_phone_aliyun(phone: str) -> str:
+    """阿里云国内短信：推荐 11 位无前缀格式"""
+    p = phone.strip().replace(" ", "").replace("-", "")
+    if p.startswith("+86"):
+        p = p[3:].lstrip()
+    elif p.startswith("0086"):
+        p = p[4:].lstrip()
+    elif p.startswith("86") and len(p) > 11:
+        p = p[2:].lstrip()
+    return p
 
 
 async def send_verification_code(phone: str, code: str) -> bool:
@@ -9,22 +22,62 @@ async def send_verification_code(phone: str, code: str) -> bool:
     if settings.twilio_account_sid and settings.twilio_auth_token:
         return await _twilio_sms(phone, content)
     if settings.aliyun_access_key and settings.aliyun_access_secret and getattr(settings, "aliyun_sms_verify_template_code", ""):
+        mode = getattr(settings, "aliyun_sms_mode", "").lower()
+        if mode == "dypnsapi":
+            return await _aliyun_dypnsapi_verify_sms(phone, code)
         return await _aliyun_verify_sms(phone, code)
     # 模拟模式
     print(f"[模拟短信] 验证码发送至 {phone}: {code}")
     return True
 
 
+async def _aliyun_dypnsapi_verify_sms(phone: str, code: str) -> bool:
+    """阿里云号码认证服务（融合认证套餐包）- 使用赠送签名/模板"""
+    try:
+        try:
+            from alibabacloud_dypnsapi20170525.client import Client as DypnsClient
+        except ImportError:
+            print("阿里云号码认证 SDK 未安装，请执行: pip install alibabacloud-dypnsapi20170525")
+            return False
+        from alibabacloud_tea_openapi import models as open_models
+        from alibabacloud_dypnsapi20170525 import models as dypns_models
+
+        phone_num = _normalize_phone_aliyun(phone)
+        config = open_models.Config(
+            access_key_id=settings.aliyun_access_key,
+            access_key_secret=settings.aliyun_access_secret,
+            endpoint="dypnsapi.aliyuncs.com",
+        )
+        client = DypnsClient(config)
+        req = dypns_models.SendSmsVerifyCodeRequest(
+            phone_number=phone_num,
+            sign_name=settings.aliyun_sms_sign_name,
+            template_code=settings.aliyun_sms_verify_template_code,
+            template_param='{"code":"' + code + '","min":"5"}',
+        )
+
+        def _send():
+            return client.send_sms_verify_code(req)
+
+        resp = await asyncio.to_thread(_send)
+        return resp.body.code == "OK"
+    except Exception as e:
+        print(f"Aliyun Dypnsapi verify SMS error: {e}")
+        return False
+
+
 async def _aliyun_verify_sms(phone: str, code: str) -> bool:
-    """阿里云验证码短信（需单独配置验证码模板）"""
+    """阿里云短信服务（Dysmsapi）- 需单独申请签名和模板"""
     try:
         try:
             from alibabacloud_dysmsapi20170525.client import Client as DysmsClient
         except ImportError:
+            print("阿里云短信 SDK 未安装，请执行: pip install alibabacloud_dysmsapi20170525")
             return False
         from alibabacloud_tea_openapi import models as open_models
         from alibabacloud_dysmsapi20170525 import models as sms_models
 
+        phone_num = _normalize_phone_aliyun(phone)
         config = open_models.Config(
             access_key_id=settings.aliyun_access_key,
             access_key_secret=settings.aliyun_access_secret,
@@ -32,7 +85,7 @@ async def _aliyun_verify_sms(phone: str, code: str) -> bool:
         )
         client = DysmsClient(config)
         req = sms_models.SendSmsRequest(
-            phone_numbers=phone,
+            phone_numbers=phone_num,
             sign_name=settings.aliyun_sms_sign_name,
             template_code=settings.aliyun_sms_verify_template_code,
             template_param='{"code":"' + code + '"}',
@@ -104,7 +157,7 @@ async def _aliyun_sms(phone: str, content: str, success: bool) -> bool:
         )
         client = DysmsClient(config)
         req = sms_models.SendSmsRequest(
-            phone_numbers=phone,
+            phone_numbers=_normalize_phone_aliyun(phone),
             sign_name=settings.aliyun_sms_sign_name,
             template_code=settings.aliyun_sms_template_code,
             template_param={"content": content, "status": "成功" if success else "失败"},

@@ -641,16 +641,15 @@ button.secondary {
   gap: 0.5rem;
 }
 .code-row input {
-  flex: 1;
+  flex: 2;
   min-height: 2.75rem;
 }
 .code-row .code-btn {
+  flex: 1;
   padding: 0.7rem 1rem;
   min-height: 2.75rem;
   box-sizing: border-box;
   white-space: nowrap;
-  width: auto !important;
-  flex-shrink: 0;
   background: #6c757d;
   color: #fff;
   border: none;

@@ -12,6 +12,9 @@ COPY . .
 
 # Railway 默认 PORT=8080，Generate Domain 时请填 8080
 ENV PORT=8080
+# 阿里云 SDK 含中文签名时需 UTF-8，否则 latin-1 编码报错
+ENV PYTHONUTF8=1
+ENV LANG=C.UTF-8
 EXPOSE 8080
 
 COPY start.sh .

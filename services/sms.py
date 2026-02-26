@@ -1,6 +1,11 @@
 """短信通知服务"""
 import asyncio
+import hashlib
+import hmac
+import base64
+import uuid
 from datetime import datetime
+from urllib.parse import quote, urlencode
 from config import settings
 
 
@@ -41,52 +46,64 @@ async def send_verification_code(phone: str, code: str) -> bool:
     return True
 
 
+def _aliyun_rpc_sign(secret: str, method: str, query: str) -> str:
+    """阿里云 RPC 签名，使用 UTF-8"""
+    string_to_sign = method + "&" + quote("/", safe="") + "&" + quote(query, safe="")
+    h = hmac.new((secret + "&").encode("utf-8"), string_to_sign.encode("utf-8"), hashlib.sha1)
+    return base64.b64encode(h.digest()).decode("utf-8")
+
+
 async def _aliyun_dypnsapi_verify_sms(phone: str, code: str) -> bool:
-    """阿里云号码认证服务（融合认证套餐包）- 使用赠送签名/模板"""
+    """阿里云号码认证服务（融合认证套餐包）- 使用 httpx 直接调用，避免 SDK latin-1 编码问题"""
     try:
-        try:
-            from alibabacloud_dypnsapi20170525.client import Client as DypnsClient
-        except ImportError:
-            print("[阿里云] SDK 未安装: pip install alibabacloud-dypnsapi20170525")
-            return False
-        from alibabacloud_tea_openapi import models as open_models
-        from alibabacloud_dypnsapi20170525 import models as dypns_models
+        import httpx
+        from datetime import datetime, timezone
 
         phone_num = _normalize_phone_aliyun(phone)
         print(f"[阿里云] 发送验证码: phone={phone_num}, sign={settings.aliyun_sms_sign_name}, template={settings.aliyun_sms_verify_template_code}")
-        config = open_models.Config(
-            access_key_id=settings.aliyun_access_key,
-            access_key_secret=settings.aliyun_access_secret,
-            endpoint="dypnsapi.aliyuncs.com",
-            region_id="cn-hangzhou",
-        )
-        client = DypnsClient(config)
-        req = dypns_models.SendSmsVerifyCodeRequest(
-            phone_number=phone_num,
-            sign_name=settings.aliyun_sms_sign_name,
-            template_code=settings.aliyun_sms_verify_template_code,
-            template_param='{"code":"' + code + '","min":"5"}',
-        )
 
-        def _send():
-            return client.send_sms_verify_code(req)
+        params = {
+            "Action": "SendSmsVerifyCode",
+            "PhoneNumber": phone_num,
+            "SignName": settings.aliyun_sms_sign_name,
+            "TemplateCode": settings.aliyun_sms_verify_template_code,
+            "TemplateParam": '{"code":"' + code + '","min":"5"}',
+            "Format": "JSON",
+            "Version": "2017-05-25",
+            "AccessKeyId": settings.aliyun_access_key,
+            "SignatureMethod": "HMAC-SHA1",
+            "SignatureVersion": "1.0",
+            "SignatureNonce": str(uuid.uuid4()),
+            "Timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        }
+        # 按 key 排序后拼接，使用 UTF-8 编码
+        sorted_keys = sorted(params.keys())
+        query_parts = []
+        for k in sorted_keys:
+            v = params[k]
+            query_parts.append(f"{quote(k, safe='')}={quote(str(v), safe='')}")
+        query_str = "&".join(query_parts)
+        signature = _aliyun_rpc_sign(settings.aliyun_access_secret, "POST", query_str)
+        params["Signature"] = signature
 
-        resp = await asyncio.to_thread(_send)
-        code_val = getattr(resp.body, "code", None) or getattr(resp.body, "Code", None)
+        body_bytes = urlencode(params, encoding="utf-8").encode("utf-8")
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            resp = await client.post(
+                "https://dypnsapi.aliyuncs.com/",
+                content=body_bytes,
+                headers={"Content-Type": "application/x-www-form-urlencoded; charset=utf-8"},
+            )
+        body = resp.json()
+        code_val = body.get("Code", body.get("code", ""))
         if code_val != "OK":
-            msg = getattr(resp.body, "message", "") or getattr(resp.body, "Message", "")
+            msg = body.get("Message", body.get("message", ""))
             print(f"[阿里云] 发送失败: Code={code_val}, Message={msg}")
             return False
         print(f"[阿里云] 发送成功: phone={phone_num}")
         return True
     except Exception as e:
         import traceback
-        err_msg = str(e)
-        err_code = getattr(e, "code", None) or getattr(e, "Code", None)
-        err_data = getattr(e, "data", None)
-        print(f"[阿里云] 异常: {type(e).__name__} | code={err_code} | message={err_msg}")
-        if err_data:
-            print(f"[阿里云] data={err_data}")
+        print(f"[阿里云] 异常: {type(e).__name__} | {e}")
         traceback.print_exc()
         return False
 

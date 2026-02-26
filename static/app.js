@@ -305,7 +305,10 @@ function initLoginModal() {
   modal.querySelector(".modal-backdrop").addEventListener("click", hideLoginModal);
   cancelBtn.addEventListener("click", hideLoginModal);
 
-  sendBtn.addEventListener("click", async () => {
+  modal.addEventListener("click", async (e) => {
+    if (e.target.id !== "sendCodeBtn" && !e.target.closest("#sendCodeBtn")) return;
+    e.preventDefault();
+    e.stopPropagation();
     const phone = phoneInput.value.trim().replace(/\s/g, "").replace(/-/g, "");
     if (phone.length < 8) {
       alert("请输入正确的手机号（含区号）");
@@ -336,7 +339,7 @@ function initLoginModal() {
       sendBtn.disabled = false;
       sendBtn.textContent = "获取验证码";
     }
-  });
+  }, true);
 
   submitBtn.addEventListener("click", async () => {
     const phone = phoneInput.value.trim().replace(/\s/g, "").replace(/-/g, "");

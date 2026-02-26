@@ -261,27 +261,9 @@ function initReservationForm() {
 
 function updateAuthUI() {
   const token = getToken();
-  const userInfo = document.getElementById("userInfo");
   const myLink = document.getElementById("myReservationsLink");
-  const loginBtn = document.getElementById("loginBtn");
-  const logoutBtn = document.getElementById("logoutBtn");
-  if (token) {
-    loginBtn.classList.add("hidden");
-    logoutBtn.classList.remove("hidden");
-    if (myLink) myLink.classList.remove("hidden");
-    userInfo.classList.remove("hidden");
-    fetch(`${API}/api/auth/me`, { headers: getAuthHeaders() })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d) => {
-        if (d) userInfo.textContent = d.phone;
-      })
-      .catch(() => {});
-  } else {
-    loginBtn.classList.remove("hidden");
-    logoutBtn.classList.add("hidden");
-    if (myLink) myLink.classList.add("hidden");
-    userInfo.classList.add("hidden");
-  }
+  if (token && myLink) myLink.classList.remove("hidden");
+  else if (myLink) myLink.classList.add("hidden");
 }
 
 function showLoginModal() {
@@ -390,10 +372,6 @@ function initLoginModal() {
     }
   });
 
-  document.getElementById("logoutBtn").addEventListener("click", () => {
-    clearToken();
-    updateAuthUI();
-  });
 }
 
 if (document.readyState === "loading") {

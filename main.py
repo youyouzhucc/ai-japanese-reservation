@@ -100,6 +100,8 @@ async def auth_sms_status():
     has_key = bool(settings.aliyun_access_key and settings.aliyun_access_secret)
     has_template = bool(getattr(settings, "aliyun_sms_verify_template_code", ""))
     mode = getattr(settings, "aliyun_sms_mode", "").lower()
+    # 列出进程内 env 键样本，确认 Railway 是否注入了变量
+    aliyun_keys = [k for k in os.environ.keys() if "ALIYUN" in k.upper()]
     return {
         "aliyun_configured": has_key and has_template,
         "aliyun_mode": mode or "(未设置)",
@@ -107,7 +109,9 @@ async def auth_sms_status():
         "sign_name": settings.aliyun_sms_sign_name or "(未设置)",
         "template_code": settings.aliyun_sms_verify_template_code or "(未设置)",
         "env_in_process": env_present,
-        "hint": "若 env_in_process 全为 false，请 Redeploy 或检查变量是否加在正确服务上",
+        "aliyun_keys_in_env": aliyun_keys,
+        "env_total_count": len(os.environ),
+        "hint": "若 env_in_process 全为 false：1) 点击 Variables 页的 Deploy 按钮保存 2) 确认变量在正确 Environment(Production) 3) Redeploy 服务",
     }
 
 

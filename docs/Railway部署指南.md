@@ -71,6 +71,14 @@ Railway 文件系统是临时的，**SQLite 数据会在重启后丢失**。生�
 - 检查 `Procfile` 中 `$PORT` 是否正确（Railway 会注入）
 - 确认 `uvicorn` 监听 `0.0.0.0`
 
+### 环境变量未生效（如阿里云短信配置后仍显示未设置）
+
+1. **点击 Deploy 保存**：在 Variables 页添加/修改变量后，若出现 **Deploy** 按钮，必须点击它才能保存并触发部署，否则变量不会生效
+2. **确认 Environment**：变量需加在正确的 Environment（通常为 Production）
+3. **确认 Service**：变量需加在实际运行应用的那个 Service 上
+4. **Redeploy**：修改变量后，在 Deployments 页点击 Redeploy 确保新变量被注入
+5. **验证**：部署完成后访问 `/api/auth/sms-status` 检查 `env_in_process` 是否全为 `true`
+
 ### 数据丢失
 
 - SQLite 在 Railway 上会随容器重启而清空

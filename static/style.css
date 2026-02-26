@@ -342,12 +342,12 @@ body {
 }
 .form-header-nav-link {
   color: #1a1a1a;
-  font-size: 12pt;
+  font-size: 10pt;
   text-decoration: none;
 }
 .form-header-nav-link:hover {
-  color: #1890ff;
-  text-decoration: underline;
+  color: #1a1a1a;
+  text-decoration: none;
 }
 .form-header p {
   color: #666;

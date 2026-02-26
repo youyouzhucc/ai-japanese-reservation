@@ -60,7 +60,10 @@ async def _aliyun_dypnsapi_verify_sms(phone: str, code: str) -> bool:
             return client.send_sms_verify_code(req)
 
         resp = await asyncio.to_thread(_send)
-        return resp.body.code == "OK"
+        if resp.body.code != "OK":
+            print(f"[阿里云] 发送失败: Code={resp.body.code}, Message={getattr(resp.body, 'message', '')}")
+            return False
+        return True
     except Exception as e:
         print(f"Aliyun Dypnsapi verify SMS error: {e}")
         return False

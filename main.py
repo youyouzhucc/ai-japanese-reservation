@@ -99,7 +99,10 @@ async def auth_send_code(data: AuthSendCodeRequest):
     code = store_verification_code(phone)
     ok = await send_verification_code(phone, code)
     if not ok:
-        raise HTTPException(500, "验证码发送失败，请稍后重试")
+        raise HTTPException(
+            500,
+            "验证码发送失败。请确认：1) 手机号已在阿里云控制台「测试手机号」中绑定；2) 查看服务端日志获取详细错误",
+        )
     return {"message": "验证码已发送"}
 
 

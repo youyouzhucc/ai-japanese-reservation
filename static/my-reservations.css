@@ -103,3 +103,15 @@
 .logout-btn:hover {
   background: #c82333;
 }
+
+/* 移动端适配 */
+@media (max-width: 640px) {
+  .reservation-card {
+    padding: 1rem;
+  }
+  .nav-link, .nav-btn {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+}

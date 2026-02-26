@@ -1,6 +1,11 @@
 * {
   box-sizing: border-box;
 }
+/* 移动端触摸优化 */
+a, button {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
 .page-header {
   margin: -2rem -2rem 0 -2rem;
   margin-bottom: 1.5rem;
@@ -310,6 +315,7 @@ body {
   min-height: 100vh;
   margin: 0;
   padding: 2rem;
+  -webkit-text-size-adjust: 100%;
 }
 .container {
   max-width: 560px;
@@ -440,7 +446,10 @@ body {
   border-radius: 8px;
   background: #fff;
   color: #000;
-  font-size: 10pt !important;
+  font-size: 16px !important; /* 防止 iOS 聚焦时自动缩放 */
+}
+@media (min-width: 480px) {
+  .field input, .field textarea { font-size: 10pt !important; }
 }
 .field input[type="number"] {
   font-size: 10pt !important;
@@ -626,21 +635,26 @@ button.secondary {
 .login-submit-btn {
   flex: 2;
   padding: 0.6rem 1rem;
-  background: #fff;
-  color: #1a1a1a;
-  border: 1px solid #adb5bd;
+  min-height: 2.75rem;
+  background: #1a1a1a;
+  color: #fff;
+  border: none;
   border-radius: 8px;
   font-size: 10pt;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 .login-submit-btn:hover {
-  background: #f8f9fa;
-  border-color: #6c757d;
+  background: #333;
 }
 .login-input {
   padding: 0.7rem 1rem !important;
   min-height: 2.75rem;
+  font-size: 16px !important; /* 防止 iOS 聚焦时自动缩放 */
   box-sizing: border-box;
+}
+@media (min-width: 480px) {
+  .login-input { font-size: 10pt !important; }
 }
 .code-row {
   display: flex;
@@ -678,4 +692,70 @@ button.secondary {
 }
 .modal-actions button {
   flex: 1;
+}
+
+/* ========== 移动端适配 (iOS / Android) ========== */
+@media (max-width: 640px) {
+  body {
+    padding: 1rem;
+    padding-left: max(1rem, env(safe-area-inset-left, 0px));
+    padding-right: max(1rem, env(safe-area-inset-right, 0px));
+    padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+  }
+  .page-header {
+    margin-left: -1rem;
+    margin-right: -1rem;
+  }
+  .container {
+    padding: 1rem;
+  }
+  .form-header h1 {
+    font-size: 1.4rem;
+  }
+  .form-header-title-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  .form-header-nav {
+    width: 100%;
+  }
+  .row {
+    grid-template-columns: 1fr;
+  }
+  .datetime-inputs {
+    flex-direction: column;
+  }
+  .datetime-inputs .time-input-wrap {
+    min-width: 100%;
+  }
+  .top-nav {
+    margin-left: -1rem;
+    margin-right: -1rem;
+    padding-left: max(1rem, env(safe-area-inset-left, 0px));
+    padding-right: max(1rem, env(safe-area-inset-right, 0px));
+  }
+  .modal {
+    padding: 1rem;
+    padding-left: max(1rem, env(safe-area-inset-left, 0px));
+    padding-right: max(1rem, env(safe-area-inset-right, 0px));
+  }
+  .modal-content {
+    max-width: 100%;
+  }
+  button {
+    min-height: 44px;
+  }
+  .form-header-nav-link,
+  .nav-link {
+    min-height: 44px;
+    padding: 0.5rem 0;
+    display: inline-flex;
+    align-items: center;
+  }
+  .banner-slide {
+    flex: 0 0 80%;
+    width: 80%;
+    min-width: 80%;
+  }
 }

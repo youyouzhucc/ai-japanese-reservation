@@ -26,8 +26,18 @@ async def send_verification_code(phone: str, code: str) -> bool:
         if mode == "dypnsapi":
             return await _aliyun_dypnsapi_verify_sms(phone, code)
         return await _aliyun_verify_sms(phone, code)
-    # 模拟模式（未配置阿里云或配置不完整时）
-    print(f"[模拟短信] 验证码发送至 {phone}: {code} （未配置阿里云或 ALIYUN_SMS_MODE!=dypnsapi）")
+    # 模拟模式：打印缺失的配置项，便于在 Railway 中排查
+    missing = []
+    if not settings.aliyun_access_key:
+        missing.append("ALIYUN_ACCESS_KEY")
+    if not settings.aliyun_access_secret:
+        missing.append("ALIYUN_ACCESS_SECRET")
+    if not getattr(settings, "aliyun_sms_verify_template_code", ""):
+        missing.append("ALIYUN_SMS_VERIFY_TEMPLATE_CODE")
+    mode = getattr(settings, "aliyun_sms_mode", "").strip()
+    if mode.lower() != "dypnsapi":
+        missing.append(f"ALIYUN_SMS_MODE(当前={repr(mode) or '空'},需=dypnsapi)")
+    print(f"[模拟短信] 验证码发送至 {phone}: {code} | 缺失: {missing}")
     return True
 
 

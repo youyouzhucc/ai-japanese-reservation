@@ -24,8 +24,8 @@
       <div class="form-header-title-row">
         <h1 id="pageTitle">🍣 日本餐厅预订服务</h1>
         <nav class="form-header-nav">
-          <a href="/my-account" id="myAccountLink" class="form-header-nav-link">我的账号</a>
-          <a href="/my-reservations" id="myReservationsLink" class="form-header-nav-link">我的预约</a>
+          <a href="/my-account" id="myAccountLink" class="form-header-nav-link" onclick="return window.checkAuthNav(event, this)">我的账号</a>
+          <a href="/my-reservations" id="myReservationsLink" class="form-header-nav-link" onclick="return window.checkAuthNav(event, this)">我的预约</a>
         </nav>
       </div>
       <p id="pageSubtitle">填写预约信息，AI 将自动致电餐厅完成日语预约</p>
@@ -155,7 +155,7 @@
       </section>
 
       <div class="actions">
-        <button type="submit" id="submitBtn" data-i18n="submit">提交预约</button>
+        <button type="submit" id="submitBtn" data-i18n="submit" onclick="return window.checkAuthSubmit(event)">提交预约</button>
       </div>
     </form>
 
@@ -193,6 +193,6 @@
   </div>
 
   <script src="/static/i18n.js" defer></script>
-  <script src="/static/app.js?v=2" defer></script>
+  <script src="/static/app.js?v=4" defer></script>
 </body>
 </html>

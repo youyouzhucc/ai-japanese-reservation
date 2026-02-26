@@ -1,6 +1,25 @@
 const API = "";
 const AUTH_KEY = "reservation_auth_token";
 
+window.checkAuthNav = function(e, el) {
+  if (!localStorage.getItem(AUTH_KEY)) {
+    e.preventDefault();
+    e.stopPropagation();
+    document.getElementById("loginModal")?.classList.remove("hidden");
+    return false;
+  }
+  return true;
+};
+window.checkAuthSubmit = function(e) {
+  if (!localStorage.getItem(AUTH_KEY)) {
+    e.preventDefault();
+    e.stopPropagation();
+    document.getElementById("loginModal")?.classList.remove("hidden");
+    return false;
+  }
+  return true;
+};
+
 function getToken() {
   return localStorage.getItem(AUTH_KEY);
 }
@@ -264,22 +283,16 @@ function updateAuthUI() {
 }
 
 function initHeaderNavLinks() {
-  const myAccountLink = document.getElementById("myAccountLink");
-  const myReservationsLink = document.getElementById("myReservationsLink");
-  function handleNavClick(e) {
-    if (!getToken()) {
-      e.preventDefault();
-      e.stopPropagation();
-      showLoginModal();
-      return false;
-    }
-  }
-  if (myAccountLink) {
-    myAccountLink.addEventListener("click", handleNavClick, true);
-  }
-  if (myReservationsLink) {
-    myReservationsLink.addEventListener("click", handleNavClick, true);
-  }
+  document.querySelectorAll('a[href="/my-account"], a[href="/my-reservations"]').forEach((link) => {
+    link.addEventListener("click", (e) => {
+      if (!localStorage.getItem(AUTH_KEY)) {
+        e.preventDefault();
+        e.stopPropagation();
+        document.getElementById("loginModal")?.classList.remove("hidden");
+        return false;
+      }
+    }, true);
+  });
 }
 
 function showLoginModal() {
@@ -374,17 +387,7 @@ function initLoginModal() {
 }
 
 function initAuthTriggers() {
-  const submitBtn = document.getElementById("submitBtn");
-  if (submitBtn) {
-    submitBtn.addEventListener("click", (e) => {
-      if (!getToken()) {
-        e.preventDefault();
-        e.stopPropagation();
-        showLoginModal();
-        return false;
-      }
-    }, true);
-  }
+  // 已通过 onclick 内联处理
 }
 
 function init() {
@@ -393,6 +396,9 @@ function init() {
   initHeaderNavLinks();
   initAuthTriggers();
   updateAuthUI();
+  if (new URLSearchParams(location.search).get("login") === "1") {
+    document.getElementById("loginModal")?.classList.remove("hidden");
+  }
 }
 
 if (document.readyState === "loading") {

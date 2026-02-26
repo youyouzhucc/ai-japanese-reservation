@@ -90,6 +90,22 @@ def _parse_datetime(s: str) -> datetime:
 
 # ============ 认证 API ============
 
+@app.get("/api/auth/sms-status")
+async def auth_sms_status():
+    """调试用：检查短信配置是否生效（不暴露密钥）"""
+    from config import settings
+    has_key = bool(settings.aliyun_access_key and settings.aliyun_access_secret)
+    has_template = bool(getattr(settings, "aliyun_sms_verify_template_code", ""))
+    mode = getattr(settings, "aliyun_sms_mode", "").lower()
+    return {
+        "aliyun_configured": has_key and has_template,
+        "aliyun_mode": mode or "(未设置)",
+        "using_dypnsapi": mode == "dypnsapi",
+        "sign_name": settings.aliyun_sms_sign_name or "(未设置)",
+        "template_code": settings.aliyun_sms_verify_template_code or "(未设置)",
+    }
+
+
 @app.post("/api/auth/send-code")
 async def auth_send_code(data: AuthSendCodeRequest):
     """发送验证码到手机"""

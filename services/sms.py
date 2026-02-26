@@ -26,8 +26,8 @@ async def send_verification_code(phone: str, code: str) -> bool:
         if mode == "dypnsapi":
             return await _aliyun_dypnsapi_verify_sms(phone, code)
         return await _aliyun_verify_sms(phone, code)
-    # 模拟模式
-    print(f"[模拟短信] 验证码发送至 {phone}: {code}")
+    # 模拟模式（未配置阿里云或配置不完整时）
+    print(f"[模拟短信] 验证码发送至 {phone}: {code} （未配置阿里云或 ALIYUN_SMS_MODE!=dypnsapi）")
     return True
 
 
@@ -37,12 +37,13 @@ async def _aliyun_dypnsapi_verify_sms(phone: str, code: str) -> bool:
         try:
             from alibabacloud_dypnsapi20170525.client import Client as DypnsClient
         except ImportError:
-            print("阿里云号码认证 SDK 未安装，请执行: pip install alibabacloud-dypnsapi20170525")
+            print("[阿里云] SDK 未安装: pip install alibabacloud-dypnsapi20170525")
             return False
         from alibabacloud_tea_openapi import models as open_models
         from alibabacloud_dypnsapi20170525 import models as dypns_models
 
         phone_num = _normalize_phone_aliyun(phone)
+        print(f"[阿里云] 发送验证码: phone={phone_num}, sign={settings.aliyun_sms_sign_name}, template={settings.aliyun_sms_verify_template_code}")
         config = open_models.Config(
             access_key_id=settings.aliyun_access_key,
             access_key_secret=settings.aliyun_access_secret,
@@ -60,12 +61,17 @@ async def _aliyun_dypnsapi_verify_sms(phone: str, code: str) -> bool:
             return client.send_sms_verify_code(req)
 
         resp = await asyncio.to_thread(_send)
-        if resp.body.code != "OK":
-            print(f"[阿里云] 发送失败: Code={resp.body.code}, Message={getattr(resp.body, 'message', '')}")
+        code_val = getattr(resp.body, "code", None) or getattr(resp.body, "Code", None)
+        if code_val != "OK":
+            msg = getattr(resp.body, "message", "") or getattr(resp.body, "Message", "")
+            print(f"[阿里云] 发送失败: Code={code_val}, Message={msg}")
             return False
+        print(f"[阿里云] 发送成功: phone={phone_num}")
         return True
     except Exception as e:
-        print(f"Aliyun Dypnsapi verify SMS error: {e}")
+        import traceback
+        print(f"[阿里云] 异常: {e}")
+        traceback.print_exc()
         return False
 
 

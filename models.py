@@ -1,11 +1,20 @@
 """预约数据模型"""
 from datetime import datetime
 from enum import Enum
-from sqlalchemy import Column, Integer, String, DateTime, Text, Boolean
+from sqlalchemy import Column, Integer, String, DateTime, Text, Boolean, ForeignKey
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
+
+
+class User(Base):
+    """用户（手机号注册）"""
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    phone = Column(String(50), unique=True, nullable=False, index=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
 
 
 class ReservationStatus(str, Enum):
@@ -23,6 +32,7 @@ class Reservation(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     order_no = Column(String(32), unique=True, nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True, index=True)  # 关联用户，历史数据可为空
 
     # 餐厅信息
     restaurant_name = Column(String(200), nullable=False)

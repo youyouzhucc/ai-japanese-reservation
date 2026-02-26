@@ -24,13 +24,18 @@ class Settings(BaseSettings):
     twilio_auth_token: str = ""
     twilio_phone_number: str = ""
     openai_api_key: str = ""
-    # 餐厅搜索（可选，配置后使用 Google Places API）
+    # 餐厅搜索（可选，配置后优先使用，更稳定）
     google_places_api_key: str = ""
+    foursquare_api_key: str = ""  # 推荐：每月 $200 免费额度，无需绑卡
+    # 登录认证
+    jwt_secret: str = "change-me-in-production"
+    jwt_expire_hours: int = 168  # 7 天
     # 阿里云短信
     aliyun_access_key: str = ""
     aliyun_access_secret: str = ""
     aliyun_sms_sign_name: str = ""
     aliyun_sms_template_code: str = ""
+    aliyun_sms_verify_template_code: str = ""  # 验证码模板（登录/注册用）
 
     class Config:
         env_file = ".env"

@@ -15,6 +15,9 @@ asyncpg==0.29.0
 # 支付宝当面付
 python-alipay-sdk==3.4.0
 
+# JWT 登录认证
+PyJWT==2.8.0
+
 # 可选：真实 AI 电话 & 短信
 # twilio==8.11.0
 # openai==1.12.0

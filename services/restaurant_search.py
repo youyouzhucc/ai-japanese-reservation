@@ -1,4 +1,4 @@
-"""餐厅搜索服务：支持 OpenStreetMap(免费)、Google Places API、Mock 数据"""
+"""餐厅搜索服务：支持 Foursquare(推荐)、Google Places、OpenStreetMap、Mock"""
 from __future__ import annotations
 
 import re
@@ -21,24 +21,38 @@ MOCK_RESTAURANTS = [
 ]
 
 
-async def search_restaurants(query: str, api_key: str | None = None) -> list[dict[str, Any]]:
+async def search_restaurants(
+    query: str,
+    google_key: str | None = None,
+    foursquare_key: str | None = None,
+) -> list[dict[str, Any]]:
     """
     搜索餐厅，返回 [{name, phone, address}, ...]
-    - 有 api_key 时使用 Google Places API
-    - 否则使用 OpenStreetMap Overpass API（免费，无需 Key）
-    - OSM 无结果时回退到 mock
+    优先级：Foursquare > Google Places > OSM > Mock
     """
     query = (query or "").strip()
     if not query:
         return []
 
-    if api_key:
-        return await _search_google_places(query, api_key)
+    # 1. Foursquare（推荐：稳定，$200/月免费，无需绑卡）
+    if foursquare_key:
+        results = await _search_foursquare(query, foursquare_key)
+        if results:
+            return results
+
+    # 2. Google Places
+    if google_key:
+        results = await _search_google_places(query, google_key)
+        if results:
+            return results
+
+    # 3. OpenStreetMap（免费但可能限流）
     results = await _search_osm(query)
     if results:
         return results
+
+    # 4. Mock 兜底
     mock_results = _search_mock(query)
-    # OSM 无结果时：有关键词匹配则返回 mock，否则返回全部示例供参考
     return mock_results if mock_results else _get_all_mock()
 
 
@@ -142,6 +156,43 @@ def _get_all_mock() -> list[dict[str, Any]]:
         {"name": r["name"], "phone": r.get("phone") or "", "address": r.get("address") or ""}
         for r in MOCK_RESTAURANTS[:8]
     ]
+
+
+async def _search_foursquare(query: str, api_key: str) -> list[dict[str, Any]]:
+    """Foursquare Places API - 稳定，$200/月免费额度，无需绑卡"""
+    import httpx
+
+    url = "https://api.foursquare.com/v3/places/search"
+    params = {
+        "query": f"{query} restaurant",
+        "near": "Tokyo, Japan",
+        "limit": 10,
+        "fields": "name,location,tel",
+    }
+    headers = {
+        "Authorization": api_key,
+        "Accept": "application/json",
+    }
+    try:
+        async with httpx.AsyncClient(timeout=15) as client:
+            resp = await client.get(url, params=params, headers=headers)
+            resp.raise_for_status()
+            data = resp.json()
+    except Exception:
+        return []
+
+    results = []
+    for p in data.get("results", [])[:8]:
+        name = p.get("name", "").strip()
+        if not name:
+            continue
+        loc = p.get("location", {}) or {}
+        address = loc.get("formatted_address", "") or " ".join(
+            filter(None, [loc.get("address"), loc.get("locality"), loc.get("region")])
+        )
+        phone = p.get("tel", "")
+        results.append({"name": name, "phone": phone, "address": address})
+    return results
 
 
 async def _search_google_places(query: str, api_key: str) -> list[dict[str, Any]]:

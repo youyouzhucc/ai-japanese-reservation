@@ -3,6 +3,47 @@ from datetime import datetime
 from config import settings
 
 
+async def send_verification_code(phone: str, code: str) -> bool:
+    """发送验证码短信（登录/注册）"""
+    content = f"【AI预约】您的验证码是 {code}，5 分钟内有效，请勿泄露。"
+    if settings.twilio_account_sid and settings.twilio_auth_token:
+        return await _twilio_sms(phone, content)
+    if settings.aliyun_access_key and settings.aliyun_access_secret and getattr(settings, "aliyun_sms_verify_template_code", ""):
+        return await _aliyun_verify_sms(phone, code)
+    # 模拟模式
+    print(f"[模拟短信] 验证码发送至 {phone}: {code}")
+    return True
+
+
+async def _aliyun_verify_sms(phone: str, code: str) -> bool:
+    """阿里云验证码短信（需单独配置验证码模板）"""
+    try:
+        try:
+            from alibabacloud_dysmsapi20170525.client import Client as DysmsClient
+        except ImportError:
+            return False
+        from alibabacloud_tea_openapi import models as open_models
+        from alibabacloud_dysmsapi20170525 import models as sms_models
+
+        config = open_models.Config(
+            access_key_id=settings.aliyun_access_key,
+            access_key_secret=settings.aliyun_access_secret,
+            endpoint="dysmsapi.aliyuncs.com",
+        )
+        client = DysmsClient(config)
+        req = sms_models.SendSmsRequest(
+            phone_numbers=phone,
+            sign_name=settings.aliyun_sms_sign_name,
+            template_code=settings.aliyun_sms_verify_template_code,
+            template_param='{"code":"' + code + '"}',
+        )
+        resp = client.send_sms(req)
+        return resp.body.code == "OK"
+    except Exception as e:
+        print(f"Aliyun verify SMS error: {e}")
+        return False
+
+
 async def send_reservation_sms(phone: str, order_no: str, success: bool,
                                restaurant_name: str, reservation_datetime: datetime) -> bool:
     """

@@ -491,3 +491,98 @@ button.secondary {
 .status-reserving { color: #856404; }
 .status-success { color: #155724; }
 .status-failed { color: #721c24; }
+
+/* 顶部导航 */
+.top-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.5rem;
+  background: #fff;
+  border-bottom: 1px solid #e9ecef;
+  margin: -2rem -2rem 1.5rem -2rem;
+}
+.nav-brand {
+  font-weight: 600;
+  color: #1a1a1a;
+  text-decoration: none;
+}
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.user-info {
+  font-size: 0.9rem;
+  color: #495057;
+}
+.nav-link {
+  color: #1890ff;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+.nav-link:hover {
+  text-decoration: underline;
+}
+.nav-btn {
+  width: auto !important;
+  padding: 0.5rem 1rem !important;
+  font-size: 0.9rem !important;
+}
+.hidden { display: none !important; }
+
+/* 登录弹窗 */
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+.modal.hidden {
+  display: none !important;
+}
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+}
+.modal-content {
+  position: relative;
+  background: #fff;
+  border-radius: 12px;
+  padding: 1.5rem;
+  max-width: 400px;
+  width: 100%;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+}
+.modal-content h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.25rem;
+}
+.modal-hint {
+  color: #666;
+  font-size: 0.9rem;
+  margin-bottom: 1.25rem;
+}
+.code-row {
+  display: flex;
+  gap: 0.5rem;
+}
+.code-row input {
+  flex: 1;
+}
+.code-row .secondary {
+  width: auto !important;
+  flex-shrink: 0;
+}
+.modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+.modal-actions button {
+  flex: 1;
+}

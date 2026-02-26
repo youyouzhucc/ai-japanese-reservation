@@ -23,7 +23,7 @@ async function loadReservations() {
   tbody.innerHTML = '<tr><td colspan="8" class="loading">加载中...</td></tr>';
 
   try {
-    const res = await fetch(`${API}/api/reservations?limit=100`);
+    const res = await fetch(`${API}/api/admin/reservations?limit=100`);
     if (!res.ok) throw new Error("加载失败");
     let list = await res.json();
 
@@ -69,7 +69,7 @@ async function loadReservations() {
 
 async function showDetail(orderNo) {
   try {
-    const res = await fetch(`${API}/api/reservations/${orderNo}`);
+    const res = await fetch(`${API}/api/admin/reservations/${orderNo}`);
     if (!res.ok) throw new Error("查询失败");
     const r = await res.json();
 
@@ -97,7 +97,7 @@ async function showDetail(orderNo) {
 async function cancelOrder(orderNo) {
   if (!confirm("确定要取消该预约单吗？")) return;
   try {
-    const res = await fetch(`${API}/api/reservations/${orderNo}`, {
+    const res = await fetch(`${API}/api/admin/reservations/${orderNo}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status: "cancelled" }),

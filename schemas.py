@@ -3,6 +3,24 @@ from datetime import datetime
 from pydantic import BaseModel, Field
 
 
+class AuthSendCodeRequest(BaseModel):
+    """发送验证码"""
+    phone: str = Field(..., min_length=8, max_length=50, description="手机号（含区号）")
+
+
+class AuthVerifyRequest(BaseModel):
+    """验证码登录/注册"""
+    phone: str = Field(..., min_length=8, max_length=50)
+    code: str = Field(..., min_length=4, max_length=8)
+
+
+class AuthResponse(BaseModel):
+    """登录成功响应"""
+    token: str
+    user_id: int
+    phone: str
+
+
 class ReservationCreate(BaseModel):
     """创建预约请求"""
     restaurant_name: str = Field(..., min_length=1, max_length=200, description="餐厅名称-必填")
@@ -19,6 +37,7 @@ class ReservationResponse(BaseModel):
     """预约单响应"""
     id: int
     order_no: str
+    user_id: int | None = None
     restaurant_name: str
     restaurant_phone: str
     guest_name: str

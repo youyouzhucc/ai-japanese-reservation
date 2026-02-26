@@ -7,7 +7,7 @@ import uuid
 from datetime import datetime
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, HTTPException, Depends, Request
+from fastapi import FastAPI, HTTPException, Depends, Request, Header
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, PlainTextResponse
 
@@ -27,11 +27,17 @@ class StaticFilesCache(StaticFiles):
         return resp
 
 from config import settings
-from models import Reservation, ReservationStatus, get_engine, get_session_maker, init_db
-from schemas import ReservationCreate, ReservationResponse, PaymentRequest, PaymentResponse, CallbackRequest, ReservationStatusUpdate
+from models import User, Reservation, ReservationStatus, get_engine, get_session_maker, init_db
+from schemas import (
+    AuthSendCodeRequest, AuthVerifyRequest, AuthResponse,
+    ReservationCreate, ReservationResponse, PaymentRequest, PaymentResponse,
+    CallbackRequest, ReservationStatusUpdate,
+)
 from services import create_payment, initiate_call, send_reservation_sms
 from services.restaurant_search import search_restaurants
 from services.payment import verify_alipay_notify
+from services.auth import store_verification_code, verify_code, create_token, decode_token
+from services.sms import send_verification_code
 
 engine = get_engine(settings.database_url)
 SessionLocal = get_session_maker(engine)
@@ -40,6 +46,28 @@ SessionLocal = get_session_maker(engine)
 async def get_db():
     async with SessionLocal() as session:
         yield session
+
+
+async def get_current_user(
+    authorization: str | None = Header(None),
+    db=Depends(get_db),
+) -> User:
+    """从 Authorization: Bearer <token> 获取当前用户"""
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(401, "请先登录")
+    token = authorization[7:].strip()
+    payload = decode_token(token)
+    if not payload:
+        raise HTTPException(401, "登录已过期，请重新登录")
+    user_id = payload.get("sub")
+    if not user_id:
+        raise HTTPException(401, "无效的登录信息")
+    from sqlalchemy import select
+    result = await db.execute(select(User).where(User.id == int(user_id)))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(401, "用户不存在")
+    return user
 
 
 @asynccontextmanager
@@ -60,10 +88,49 @@ def _parse_datetime(s: str) -> datetime:
     return datetime.strptime(s.strip(), "%Y-%m-%d %H:%M")
 
 
-# ============ API ============
+# ============ 认证 API ============
+
+@app.post("/api/auth/send-code")
+async def auth_send_code(data: AuthSendCodeRequest):
+    """发送验证码到手机"""
+    phone = data.phone.strip().replace(" ", "").replace("-", "")
+    if len(phone) < 8:
+        raise HTTPException(400, "手机号格式不正确")
+    code = store_verification_code(phone)
+    ok = await send_verification_code(phone, code)
+    if not ok:
+        raise HTTPException(500, "验证码发送失败，请稍后重试")
+    return {"message": "验证码已发送"}
+
+
+@app.post("/api/auth/verify", response_model=AuthResponse)
+async def auth_verify(data: AuthVerifyRequest, db=Depends(get_db)):
+    """验证码登录/注册，返回 token"""
+    phone = data.phone.strip().replace(" ", "").replace("-", "")
+    if not verify_code(phone, data.code):
+        raise HTTPException(400, "验证码错误或已过期")
+    from sqlalchemy import select
+    result = await db.execute(select(User).where(User.phone == phone))
+    user = result.scalar_one_or_none()
+    if not user:
+        user = User(phone=phone)
+        db.add(user)
+        await db.commit()
+        await db.refresh(user)
+    token = create_token(user.id, user.phone)
+    return AuthResponse(token=token, user_id=user.id, phone=user.phone)
+
+
+@app.get("/api/auth/me")
+async def auth_me(user: User = Depends(get_current_user)):
+    """获取当前登录用户"""
+    return {"user_id": user.id, "phone": user.phone}
+
+
+# ============ 预约 API ============
 
 @app.post("/api/reservations", response_model=ReservationResponse)
-async def create_reservation(data: ReservationCreate, db=Depends(get_db)):
+async def create_reservation(data: ReservationCreate, db=Depends(get_db), user: User = Depends(get_current_user)):
     """创建预约单（待支付），支付成功后发起 AI 电话"""
     dt = _parse_datetime(data.reservation_datetime)
     # 校验十分钟间隔
@@ -72,6 +139,7 @@ async def create_reservation(data: ReservationCreate, db=Depends(get_db)):
     order_no = _gen_order_no()
     r = Reservation(
         order_no=order_no,
+        user_id=user.id,
         restaurant_name=data.restaurant_name,
         restaurant_phone=data.restaurant_phone,
         guest_name=data.guest_name,
@@ -90,13 +158,15 @@ async def create_reservation(data: ReservationCreate, db=Depends(get_db)):
 
 
 @app.post("/api/pay", response_model=PaymentResponse)
-async def pay(req: PaymentRequest, db=Depends(get_db)):
+async def pay(req: PaymentRequest, db=Depends(get_db), user: User = Depends(get_current_user)):
     """② 创建支付订单。模拟模式直接成功并触发 AI 电话；支付宝模式返回二维码，等 notify 回调后触发"""
     from sqlalchemy import select
     result = await db.execute(select(Reservation).where(Reservation.order_no == req.order_no))
     r = result.scalar_one_or_none()
     if not r:
         raise HTTPException(404, "订单不存在")
+    if r.user_id and r.user_id != user.id:
+        raise HTTPException(403, "无权操作此订单")
     if r.status != ReservationStatus.PENDING.value:
         raise HTTPException(400, f"订单状态不可支付: {r.status}")
 
@@ -220,13 +290,54 @@ async def callback_ai_call(req: CallbackRequest, db=Depends(get_db)):
 @app.get("/api/restaurants/search")
 async def restaurant_search(q: str = ""):
     """搜索餐厅，返回名称、电话、地址。有电话时前端可自动填充"""
-    results = await search_restaurants(q, settings.google_places_api_key or None)
+    results = await search_restaurants(
+        q,
+        google_key=settings.google_places_api_key or None,
+        foursquare_key=settings.foursquare_api_key or None,
+    )
     return {"results": results}
 
 
 @app.get("/api/reservations/{order_no}", response_model=ReservationResponse)
-async def get_reservation(order_no: str, db=Depends(get_db)):
-    """查询预约单"""
+async def get_reservation(order_no: str, db=Depends(get_db), user: User = Depends(get_current_user)):
+    """查询预约单（仅本人）"""
+    from sqlalchemy import select
+    result = await db.execute(select(Reservation).where(Reservation.order_no == order_no))
+    r = result.scalar_one_or_none()
+    if not r:
+        raise HTTPException(404, "订单不存在")
+    if r.user_id and r.user_id != user.id:
+        raise HTTPException(403, "无权查看此订单")
+    return r
+
+
+@app.get("/api/reservations", response_model=list[ReservationResponse])
+async def list_reservations(skip: int = 0, limit: int = 50, db=Depends(get_db), user: User = Depends(get_current_user)):
+    """我的预约列表（仅当前用户）"""
+    from sqlalchemy import select
+    result = await db.execute(
+        select(Reservation)
+        .where(Reservation.user_id == user.id)
+        .order_by(Reservation.id.desc())
+        .offset(skip)
+        .limit(limit)
+    )
+    return result.scalars().all()
+
+
+@app.get("/api/admin/reservations", response_model=list[ReservationResponse])
+async def admin_list_reservations(skip: int = 0, limit: int = 100, db=Depends(get_db)):
+    """管理后台：全部预约列表（无用户过滤）"""
+    from sqlalchemy import select
+    result = await db.execute(
+        select(Reservation).order_by(Reservation.id.desc()).offset(skip).limit(limit)
+    )
+    return result.scalars().all()
+
+
+@app.get("/api/admin/reservations/{order_no}", response_model=ReservationResponse)
+async def admin_get_reservation(order_no: str, db=Depends(get_db)):
+    """管理后台：查询任意预约单"""
     from sqlalchemy import select
     result = await db.execute(select(Reservation).where(Reservation.order_no == order_no))
     r = result.scalar_one_or_none()
@@ -235,22 +346,35 @@ async def get_reservation(order_no: str, db=Depends(get_db)):
     return r
 
 
-@app.get("/api/reservations", response_model=list[ReservationResponse])
-async def list_reservations(skip: int = 0, limit: int = 50, db=Depends(get_db)):
-    """预约列表"""
-    from sqlalchemy import select
-    result = await db.execute(select(Reservation).order_by(Reservation.id.desc()).offset(skip).limit(limit))
-    return result.scalars().all()
-
-
-@app.patch("/api/reservations/{order_no}", response_model=ReservationResponse)
-async def update_reservation(order_no: str, data: ReservationStatusUpdate, db=Depends(get_db)):
-    """更新预约状态（如取消）"""
+@app.patch("/api/admin/reservations/{order_no}", response_model=ReservationResponse)
+async def admin_update_reservation(order_no: str, data: ReservationStatusUpdate, db=Depends(get_db)):
+    """管理后台：更新预约状态（如取消）"""
     from sqlalchemy import select
     result = await db.execute(select(Reservation).where(Reservation.order_no == order_no))
     r = result.scalar_one_or_none()
     if not r:
         raise HTTPException(404, "订单不存在")
+    if data.status == "cancelled":
+        if r.status not in (ReservationStatus.PENDING.value, ReservationStatus.RESERVING.value):
+            raise HTTPException(400, f"当前状态不可取消: {r.status}")
+        r.status = ReservationStatus.CANCELLED.value
+    else:
+        raise HTTPException(400, f"不支持的状态: {data.status}")
+    await db.commit()
+    await db.refresh(r)
+    return r
+
+
+@app.patch("/api/reservations/{order_no}", response_model=ReservationResponse)
+async def update_reservation(order_no: str, data: ReservationStatusUpdate, db=Depends(get_db), user: User = Depends(get_current_user)):
+    """更新预约状态（如取消），仅本人"""
+    from sqlalchemy import select
+    result = await db.execute(select(Reservation).where(Reservation.order_no == order_no))
+    r = result.scalar_one_or_none()
+    if not r:
+        raise HTTPException(404, "订单不存在")
+    if r.user_id and r.user_id != user.id:
+        raise HTTPException(403, "无权操作此订单")
     if data.status == "cancelled":
         if r.status not in (ReservationStatus.PENDING.value, ReservationStatus.RESERVING.value):
             raise HTTPException(400, f"当前状态不可取消: {r.status}")
@@ -275,6 +399,12 @@ async def index():
 async def admin():
     """预约单管理后台"""
     return FileResponse(BASE_DIR / "static" / "admin.html")
+
+
+@app.get("/my-reservations")
+async def my_reservations_page():
+    """我的预约单页面"""
+    return FileResponse(BASE_DIR / "static" / "my-reservations.html")
 
 
 if __name__ == "__main__":

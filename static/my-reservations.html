@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>我的预约 - AI 日语预约</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="stylesheet" href="/static/my-reservations.css">
+</head>
+<body>
+  <nav class="top-nav">
+    <a href="/" class="nav-brand">🍣 AI 日语预约</a>
+    <div class="nav-right">
+      <span id="userInfo" class="user-info"></span>
+      <a href="/" class="nav-link">新建预约</a>
+      <button type="button" id="logoutBtn" class="nav-btn">退出</button>
+    </div>
+  </nav>
+  <main class="page-content">
+    <div class="container">
+      <h1>我的预约单</h1>
+      <div id="loading" class="loading">加载中...</div>
+      <div id="empty" class="empty hidden">暂无预约记录，<a href="/">去预约</a></div>
+      <div id="list" class="reservation-list hidden"></div>
+    </div>
+  </main>
+  <div id="detailModal" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content detail-content">
+      <h3>预约详情</h3>
+      <div id="detailBody" class="detail-body"></div>
+      <div class="modal-actions">
+        <button type="button" id="detailCloseBtn" class="secondary">关闭</button>
+        <button type="button" id="detailCancelBtn" class="cancel-btn hidden">取消预约</button>
+      </div>
+    </div>
+  </div>
+  <script src="/static/my-reservations.js"></script>
+</body>
+</html>

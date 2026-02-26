@@ -1,4 +1,21 @@
 const API = "";
+const AUTH_KEY = "reservation_auth_token";
+
+function getToken() {
+  return localStorage.getItem(AUTH_KEY);
+}
+function setToken(token) {
+  localStorage.setItem(AUTH_KEY, token);
+}
+function clearToken() {
+  localStorage.removeItem(AUTH_KEY);
+}
+function getAuthHeaders() {
+  const token = getToken();
+  const h = { "Content-Type": "application/json" };
+  if (token) h["Authorization"] = "Bearer " + token;
+  return h;
+}
 
 function applyI18n() {
   document.getElementById("pageTitle").textContent = "🍣 " + t("title");
@@ -33,7 +50,7 @@ function initRestaurantSearch() {
     resultsEl.innerHTML = '<div class="search-result-item" style="color:#999">搜索中...</div>';
     resultsEl.classList.remove("hidden");
     try {
-      const res = await fetch(`${API}/api/restaurants/search?q=${encodeURIComponent(q)}`);
+      const res = await fetch(`${API}/api/restaurants/search?q=${encodeURIComponent(q)}`, { headers: getAuthHeaders() });
       if (!res.ok) {
         resultsEl.innerHTML = '<div class="search-result-item" style="color:#999">搜索失败，请重试</div>';
         return;
@@ -242,14 +259,142 @@ function initReservationForm() {
   });
 }
 
+function updateAuthUI() {
+  const token = getToken();
+  const userInfo = document.getElementById("userInfo");
+  const myLink = document.getElementById("myReservationsLink");
+  const loginBtn = document.getElementById("loginBtn");
+  const logoutBtn = document.getElementById("logoutBtn");
+  if (token) {
+    loginBtn.classList.add("hidden");
+    logoutBtn.classList.remove("hidden");
+    myLink.classList.remove("hidden");
+    userInfo.classList.remove("hidden");
+    fetch(`${API}/api/auth/me`, { headers: getAuthHeaders() })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (d) userInfo.textContent = d.phone;
+      })
+      .catch(() => {});
+  } else {
+    loginBtn.classList.remove("hidden");
+    logoutBtn.classList.add("hidden");
+    myLink.classList.add("hidden");
+    userInfo.classList.add("hidden");
+  }
+}
+
+function showLoginModal() {
+  document.getElementById("loginModal").classList.remove("hidden");
+}
+function hideLoginModal() {
+  document.getElementById("loginModal").classList.add("hidden");
+}
+
+function initLoginModal() {
+  const modal = document.getElementById("loginModal");
+  const sendBtn = document.getElementById("sendCodeBtn");
+  const submitBtn = document.getElementById("loginSubmitBtn");
+  const cancelBtn = document.getElementById("loginCancelBtn");
+  const phoneInput = document.getElementById("login_phone");
+  const codeInput = document.getElementById("login_code");
+
+  modal.querySelector(".modal-backdrop").addEventListener("click", hideLoginModal);
+  cancelBtn.addEventListener("click", hideLoginModal);
+
+  sendBtn.addEventListener("click", async () => {
+    const phone = phoneInput.value.trim().replace(/\s/g, "").replace(/-/g, "");
+    if (phone.length < 8) {
+      alert("请输入正确的手机号（含区号）");
+      return;
+    }
+    sendBtn.disabled = true;
+    sendBtn.textContent = "发送中...";
+    try {
+      const res = await fetch(`${API}/api/auth/send-code`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.detail || res.statusText || "发送失败");
+      alert("验证码已发送，请查收短信");
+      let sec = 60;
+      const t = setInterval(() => {
+        sec--;
+        sendBtn.textContent = sec > 0 ? `${sec}秒后重发` : "获取验证码";
+        if (sec <= 0) {
+          clearInterval(t);
+          sendBtn.disabled = false;
+        }
+      }, 1000);
+    } catch (e) {
+      alert(e.message || "发送失败");
+      sendBtn.disabled = false;
+      sendBtn.textContent = "获取验证码";
+    }
+  });
+
+  submitBtn.addEventListener("click", async () => {
+    const phone = phoneInput.value.trim().replace(/\s/g, "").replace(/-/g, "");
+    const code = codeInput.value.trim();
+    if (!phone || phone.length < 8) {
+      alert("请输入正确的手机号");
+      return;
+    }
+    if (!code || code.length < 4) {
+      alert("请输入验证码");
+      return;
+    }
+    submitBtn.disabled = true;
+    submitBtn.textContent = "登录中...";
+    try {
+      const res = await fetch(`${API}/api/auth/verify`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone, code }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.detail || res.statusText || "登录失败");
+      setToken(data.token);
+      hideLoginModal();
+      updateAuthUI();
+      phoneInput.value = "";
+      codeInput.value = "";
+    } catch (e) {
+      alert(e.message || "登录失败");
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "登录";
+    }
+  });
+
+  document.getElementById("logoutBtn").addEventListener("click", () => {
+    clearToken();
+    updateAuthUI();
+  });
+}
+
 if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", initReservationForm);
+  document.addEventListener("DOMContentLoaded", () => {
+    initReservationForm();
+    initLoginModal();
+    updateAuthUI();
+    if (new URLSearchParams(location.search).get("login") === "1") showLoginModal();
+  });
 } else {
   initReservationForm();
+  initLoginModal();
+  updateAuthUI();
+  if (new URLSearchParams(location.search).get("login") === "1") showLoginModal();
 }
 
 document.getElementById("reservationForm").addEventListener("submit", async (e) => {
   e.preventDefault();
+  if (!getToken()) {
+    showLoginModal();
+    return;
+  }
   const btn = document.getElementById("submitBtn");
   btn.disabled = true;
   btn.textContent = t("submitting");
@@ -297,7 +442,7 @@ document.getElementById("reservationForm").addEventListener("submit", async (e) 
   try {
     const res = await fetch(`${API}/api/reservations`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
       body: JSON.stringify(payload),
     });
     if (!res.ok) {
@@ -328,7 +473,7 @@ async function doPay(order, reservationDatetime) {
   try {
     const res = await fetch(`${API}/api/pay`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
       body: JSON.stringify({ order_no: orderNo, amount_cents: 100 }),
     });
     if (!res.ok) {
@@ -361,7 +506,7 @@ async function doPay(order, reservationDatetime) {
 
 async function checkStatus(orderNo) {
   try {
-    const res = await fetch(`${API}/api/reservations/${orderNo}`);
+    const res = await fetch(`${API}/api/reservations/${orderNo}`, { headers: getAuthHeaders() });
     if (!res.ok) throw new Error("查询失败");
     const r = await res.json();
     const dt = new Date(r.reservation_datetime).toLocaleString("zh-CN");

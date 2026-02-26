@@ -266,22 +266,25 @@ function updateAuthUI() {
 function initHeaderNavLinks() {
   const myAccountLink = document.getElementById("myAccountLink");
   const myReservationsLink = document.getElementById("myReservationsLink");
-  function handleNavClick(e, href) {
+  function handleNavClick(e) {
     if (!getToken()) {
       e.preventDefault();
+      e.stopPropagation();
       showLoginModal();
+      return false;
     }
   }
   if (myAccountLink) {
-    myAccountLink.addEventListener("click", (e) => handleNavClick(e, "/my-account"));
+    myAccountLink.addEventListener("click", handleNavClick, true);
   }
   if (myReservationsLink) {
-    myReservationsLink.addEventListener("click", (e) => handleNavClick(e, "/my-reservations"));
+    myReservationsLink.addEventListener("click", handleNavClick, true);
   }
 }
 
 function showLoginModal() {
-  document.getElementById("loginModal").classList.remove("hidden");
+  const el = document.getElementById("loginModal");
+  if (el) el.classList.remove("hidden");
 }
 function hideLoginModal() {
   document.getElementById("loginModal").classList.add("hidden");
@@ -370,27 +373,33 @@ function initLoginModal() {
 
 }
 
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", () => {
-    initReservationForm();
-    initLoginModal();
-    initHeaderNavLinks();
-    updateAuthUI();
-  });
-} else {
+function initAuthTriggers() {
+  const submitBtn = document.getElementById("submitBtn");
+  if (submitBtn) {
+    submitBtn.addEventListener("click", (e) => {
+      if (!getToken()) {
+        e.preventDefault();
+        e.stopPropagation();
+        showLoginModal();
+        return false;
+      }
+    }, true);
+  }
+}
+
+function init() {
   initReservationForm();
   initLoginModal();
   initHeaderNavLinks();
+  initAuthTriggers();
   updateAuthUI();
 }
 
-document.getElementById("submitBtn").addEventListener("click", (e) => {
-  if (!getToken()) {
-    e.preventDefault();
-    showLoginModal();
-    return;
-  }
-});
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", init);
+} else {
+  init();
+}
 
 document.getElementById("reservationForm").addEventListener("submit", async (e) => {
   e.preventDefault();

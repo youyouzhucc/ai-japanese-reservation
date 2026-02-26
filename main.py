@@ -435,6 +435,12 @@ async def my_reservations_page():
     return FileResponse(BASE_DIR / "static" / "my-reservations.html")
 
 
+@app.get("/my-account")
+async def my_account_page():
+    """我的账号页面"""
+    return FileResponse(BASE_DIR / "static" / "my-account.html")
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

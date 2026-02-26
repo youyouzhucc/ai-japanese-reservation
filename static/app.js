@@ -261,9 +261,15 @@ function initReservationForm() {
 
 function updateAuthUI() {
   const token = getToken();
-  const myLink = document.getElementById("myReservationsLink");
-  if (token && myLink) myLink.classList.remove("hidden");
-  else if (myLink) myLink.classList.add("hidden");
+  const myAccountLink = document.getElementById("myAccountLink");
+  const myReservationsLink = document.getElementById("myReservationsLink");
+  if (token) {
+    if (myAccountLink) myAccountLink.classList.remove("hidden");
+    if (myReservationsLink) myReservationsLink.classList.remove("hidden");
+  } else {
+    if (myAccountLink) myAccountLink.classList.add("hidden");
+    if (myReservationsLink) myReservationsLink.classList.add("hidden");
+  }
 }
 
 function showLoginModal() {
@@ -282,7 +288,8 @@ function initAuthGate() {
     const isAuthInput =
       target.matches("input, select, textarea") ||
       target.closest(".date-picker-wrap") ||
-      target.closest(".search-btn");
+      target.closest(".search-btn") ||
+      target.closest(".restaurant-search-wrap");
     if (isAuthInput) {
       e.preventDefault();
       e.stopPropagation();

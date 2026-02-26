@@ -322,6 +322,18 @@ body {
 .form-header {
   margin-bottom: 2rem;
 }
+.form-header-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.form-header-nav {
+  display: flex;
+  gap: 1rem;
+  flex-shrink: 0;
+}
 .form-header h1 {
   font-size: 1.8rem;
   margin: 0 0 0.5rem;

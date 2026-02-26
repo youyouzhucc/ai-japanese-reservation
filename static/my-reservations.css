@@ -67,3 +67,39 @@
 .cancel-btn {
   background: #dc3545 !important;
 }
+
+/* 我的账号页 */
+.account-card {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 10px;
+  padding: 1.5rem;
+  max-width: 400px;
+}
+.account-field {
+  margin-bottom: 1rem;
+}
+.account-field label {
+  display: block;
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 0.25rem;
+}
+.phone-masked {
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: #1a1a1a;
+}
+.logout-btn {
+  margin-top: 1rem;
+  padding: 0.6rem 1.25rem;
+  background: #dc3545;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+.logout-btn:hover {
+  background: #c82333;
+}

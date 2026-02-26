@@ -26,12 +26,19 @@ function checkAuth() {
   return true;
 }
 
+function maskPhone(phone) {
+  if (!phone || phone.length < 11) return phone || "";
+  const p = phone.replace(/\D/g, "");
+  if (p.length >= 11) return p.slice(0, 3) + "****" + p.slice(-4);
+  return phone;
+}
+
 function updateUserInfo() {
   const el = document.getElementById("userInfo");
   fetch(`${API}/api/auth/me`, { headers: getAuthHeaders() })
     .then((r) => (r.ok ? r.json() : null))
     .then((d) => {
-      if (d) el.textContent = d.phone;
+      if (d) el.textContent = maskPhone(d.phone);
       else redirectToLogin();
     })
     .catch(() => redirectToLogin());
@@ -107,13 +114,14 @@ function showDetail(orderNo) {
       const body = document.getElementById("detailBody");
       body.innerHTML = `
 订单号：${r.order_no}
-餐厅：${r.restaurant_name}
-电话：${r.restaurant_phone}
+预约餐厅：${r.restaurant_name}
+餐厅电话：${r.restaurant_phone}
 预约人：${r.guest_name}
 预约电话：${r.guest_phone}
 预约时间：${formatDate(r.reservation_datetime)}
-人数：${r.adults}人${r.children ? " + " + r.children + "儿童" : ""}
-状态：${STATUS_TEXT[r.status] || r.status}
+预约人数：${r.adults}人${r.children ? " + " + r.children + "儿童" : ""}
+预约状态：${STATUS_TEXT[r.status] || r.status}
+备注：${r.notes || "无"}
 ${r.ai_call_result ? "AI通话结果：\n" + r.ai_call_result : ""}
 创建时间：${formatDate(r.created_at)}
       `.trim();

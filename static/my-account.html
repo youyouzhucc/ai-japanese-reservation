@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>我的账号 - AI 日语预约</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="stylesheet" href="/static/my-reservations.css">
+</head>
+<body>
+  <nav class="top-nav">
+    <div class="nav-right">
+      <a href="/" class="nav-link">新建预约</a>
+      <a href="/my-reservations" class="nav-link">我的预约</a>
+    </div>
+  </nav>
+  <main class="page-content">
+    <div class="container">
+      <h1>我的账号</h1>
+      <div class="account-card">
+        <div class="account-field">
+          <label>手机号</label>
+          <div id="phoneDisplay" class="phone-masked">--</div>
+        </div>
+        <button type="button" id="logoutBtn" class="logout-btn">退出登录</button>
+      </div>
+    </div>
+  </main>
+  <script src="/static/my-account.js"></script>
+</body>
+</html>

@@ -384,6 +384,14 @@ if (document.readyState === "loading") {
   updateAuthUI();
 }
 
+document.getElementById("submitBtn").addEventListener("click", (e) => {
+  if (!getToken()) {
+    e.preventDefault();
+    showLoginModal();
+    return;
+  }
+});
+
 document.getElementById("reservationForm").addEventListener("submit", async (e) => {
   e.preventDefault();
   if (!getToken()) {

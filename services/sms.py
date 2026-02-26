@@ -98,6 +98,10 @@ async def _aliyun_dypnsapi_verify_sms(phone: str, code: str) -> bool:
         if code_val != "OK":
             msg = body.get("Message", body.get("message", ""))
             print(f"[阿里云] 发送失败: Code={code_val}, Message={msg}")
+            if code_val == "InvalidAccessKeyId":
+                ak = settings.aliyun_access_key or ""
+                masked = f"{ak[:6]}...{ak[-4:]}" if len(ak) >= 10 else "(过短)"
+                print(f"[阿里云] 当前 AccessKey 前6后4: {masked} | 请核对与阿里云控制台是否一致，且为【中国站】账号")
             return False
         print(f"[阿里云] 发送成功: phone={phone_num}")
         return True

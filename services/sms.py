@@ -58,6 +58,7 @@ async def _aliyun_dypnsapi_verify_sms(phone: str, code: str) -> bool:
             access_key_id=settings.aliyun_access_key,
             access_key_secret=settings.aliyun_access_secret,
             endpoint="dypnsapi.aliyuncs.com",
+            region_id="cn-hangzhou",
         )
         client = DypnsClient(config)
         req = dypns_models.SendSmsVerifyCodeRequest(
@@ -80,7 +81,12 @@ async def _aliyun_dypnsapi_verify_sms(phone: str, code: str) -> bool:
         return True
     except Exception as e:
         import traceback
-        print(f"[阿里云] 异常: {e}")
+        err_msg = str(e)
+        err_code = getattr(e, "code", None) or getattr(e, "Code", None)
+        err_data = getattr(e, "data", None)
+        print(f"[阿里云] 异常: {type(e).__name__} | code={err_code} | message={err_msg}")
+        if err_data:
+            print(f"[阿里云] data={err_data}")
         traceback.print_exc()
         return False
 

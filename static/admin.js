@@ -166,4 +166,7 @@ document.getElementById("detailModal").onclick = (e) => {
   }
 };
 
+// 确保初始显示预约单
+document.getElementById("reservationsPanel").classList.remove("hidden");
+document.getElementById("usersPanel").classList.add("hidden");
 loadReservations();

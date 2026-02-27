@@ -52,8 +52,11 @@ body {
   border-color: #1890ff;
   color: #fff;
 }
+.admin-panel {
+  display: block;
+}
 .admin-panel.hidden {
-  display: none;
+  display: none !important;
 }
 .back-link {
   color: #1890ff;

@@ -5,19 +5,51 @@ from urllib.parse import urlencode
 from config import settings
 
 
+def _normalize_pem_key(key: str) -> bytes:
+    """规范化 PEM 密钥：处理环境变量中的 \\n 字面量、多余空格等"""
+    if not key:
+        return b""
+    s = key.strip()
+    if isinstance(s, str):
+        # 环境变量中常将换行存为字面量 \n，需转为真实换行
+        s = s.replace("\\n", "\n").replace("\\r", "")
+    if not s.endswith("\n"):
+        s += "\n"
+    return s.encode("utf-8") if isinstance(s, str) else s
+
+
+def _qiufk_load_private_key(private_key: str):
+    """加载商户私钥，支持 PKCS#1/PKCS#8 及环境变量中的 \\n 字面量"""
+    import base64
+    from cryptography.hazmat.primitives import hashes, serialization
+    from cryptography.hazmat.primitives.asymmetric import padding
+    from cryptography.hazmat.backends import default_backend
+    key_bytes = _normalize_pem_key(private_key)
+    try:
+        return serialization.load_pem_private_key(
+            key_bytes,
+            password=None,
+            backend=default_backend(),
+        )
+    except Exception as e:
+        # 尝试 PKCS#8 格式（部分平台可能导出 PKCS#8 但带 RSA 头）
+        if b"BEGIN RSA PRIVATE KEY" in key_bytes or b"BEGIN PRIVATE KEY" in key_bytes:
+            raise ValueError(
+                f"私钥格式错误: {e}. "
+                "请检查 Railway 变量 QIUFK_PRIVATE_KEY：1) 完整 PEM 含 BEGIN/END 行；"
+                "2) 多行时用 \\n 或直接换行；3) 确认是易付通商户后台生成的 RSA 私钥"
+            ) from e
+        raise
+
+
 def _qiufk_sign(params: dict, private_key: str) -> str:
     """易付通 RSA 签名：参数按 ASCII 排序，排除 sign，空值不参与，SHA256WithRSA + Base64"""
     filtered = {k: v for k, v in params.items() if v is not None and v != "" and k != "sign"}
     sign_str = "&".join(f"{k}={v}" for k, v in sorted(filtered.items()))
     import base64
-    from cryptography.hazmat.primitives import hashes, serialization
+    from cryptography.hazmat.primitives import hashes
     from cryptography.hazmat.primitives.asymmetric import padding
-    from cryptography.hazmat.backends import default_backend
-    key = serialization.load_pem_private_key(
-        private_key.encode() if isinstance(private_key, str) else private_key,
-        password=None,
-        backend=default_backend(),
-    )
+    key = _qiufk_load_private_key(private_key)
     sig = key.sign(sign_str.encode("utf-8"), padding.PKCS1v15(), hashes.SHA256())
     return base64.b64encode(sig).decode()
 
@@ -30,8 +62,9 @@ def _qiufk_verify(data: dict, sign: str, public_key: str) -> bool:
     from cryptography.hazmat.primitives import hashes, serialization
     from cryptography.hazmat.primitives.asymmetric import padding
     from cryptography.hazmat.backends import default_backend
+    key_bytes = _normalize_pem_key(public_key)
     key = serialization.load_pem_public_key(
-        public_key.encode() if isinstance(public_key, str) else public_key,
+        key_bytes,
         backend=default_backend(),
     )
     try:
@@ -129,7 +162,8 @@ async def create_payment(order_no: str, amount_cents: int, subject: str = "AI日
                 pay_info = data.get("pay_info", "")
                 pay_type = data.get("pay_type", "")
                 trade_no = data.get("trade_no", order_no)
-                qr_code = pay_info if pay_type == "qrcode" else ""
+                # qrcode=二维码内容; jump=跳转URL，也可生成二维码供扫码
+                qr_code = pay_info if pay_type in ("qrcode", "jump") and pay_info else ""
                 return {
                     "success": True,
                     "payment_id": trade_no,

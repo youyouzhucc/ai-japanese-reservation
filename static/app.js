@@ -38,14 +38,16 @@ function getAuthHeaders() {
   return h;
 }
 
-/** 带认证的 fetch：401 时自动清除 token 并弹出登录框，登录态持久直到退出或 token 过期 */
+/** 带认证的 fetch：401 时自动清除 token 并弹出登录框，不重复 alert */
 async function fetchWithAuth(url, init = {}) {
   const headers = { ...getAuthHeaders(), ...(init.headers || {}) };
   const res = await fetch(url, { ...init, headers });
   if (res.status === 401) {
     clearToken();
     showLoginModal();
-    throw new Error("登录已过期，请重新登录");
+    const err = new Error("登录已过期，请重新登录");
+    err.authExpired = true;  // 已处理，caller 无需再 alert
+    throw err;
   }
   return res;
 }
@@ -490,7 +492,7 @@ document.getElementById("reservationForm").addEventListener("submit", async (e) 
     document.getElementById("checkStatusBtn").textContent = "去支付";
     document.getElementById("checkStatusBtn").onclick = () => doPay(order, reservation_datetime);
   } catch (err) {
-    alert(err.message || "提交失败");
+    if (!err.authExpired) alert(err.message || "提交失败");
   } finally {
     btn.disabled = false;
     btn.textContent = t("submit");
@@ -529,7 +531,7 @@ async function doPay(order, reservationDatetime) {
     btn.disabled = false;
     btn.onclick = () => checkStatus(orderNo);
   } catch (err) {
-    alert(err.message || "支付失败");
+    if (!err.authExpired) alert(err.message || "支付失败");
     btn.disabled = false;
     btn.textContent = "去支付";
   }
@@ -556,6 +558,6 @@ async function checkStatus(orderNo) {
       msg.className = "status-reserving";
     }
   } catch (e) {
-    alert(e.message);
+    if (!e.authExpired) alert(e.message);
   }
 }

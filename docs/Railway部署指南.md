@@ -88,7 +88,7 @@ Railway 文件系统是**临时的**，使用默认 SQLite 时，**每次 redepl
 
 - SQLite 在 Railway 上会随容器重启或 redeploy 而清空
 - 生产环境务必添加 PostgreSQL 插件，并确保 `DATABASE_URL` 已注入
-- 登录态有效期默认 30 天（`JWT_EXPIRE_HOURS=720`），401 时自动清除 token 并弹出登录框
+- 登录态有效期默认 180 天（`JWT_EXPIRE_HOURS=4320`），401 时仅弹出登录框不重复 alert
 
 ---
 

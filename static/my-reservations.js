@@ -24,7 +24,9 @@ async function fetchWithAuth(url, init = {}) {
   if (res.status === 401) {
     clearToken();
     redirectToLogin();
-    throw new Error("登录已过期，请重新登录");
+    const err = new Error("登录已过期，请重新登录");
+    err.authExpired = true;
+    throw err;
   }
   return res;
 }
@@ -204,7 +206,7 @@ async function doPayFromDetail(r, bodyEl, payBtn) {
     payBtn.disabled = false;
     payBtn.onclick = () => refreshDetailStatus(orderNo, bodyEl, payBtn);
   } catch (err) {
-    alert(err.message || "支付失败");
+    if (!err.authExpired) alert(err.message || "支付失败");
     payBtn.disabled = false;
     payBtn.textContent = "去支付";
   }
@@ -233,7 +235,7 @@ async function refreshDetailStatus(orderNo, bodyEl, payBtn) {
     }
     loadReservations();
   } catch (err) {
-    alert(err.message || "刷新失败");
+    if (!err.authExpired) alert(err.message || "刷新失败");
   } finally {
     payBtn.disabled = false;
   }
@@ -258,7 +260,7 @@ function cancelOrder(orderNo, modal) {
       modal.classList.add("hidden");
       loadReservations();
     })
-    .catch((e) => alert(e.message || "取消失败"));
+    .catch((e) => { if (!e.authExpired) alert(e.message || "取消失败"); });
 }
 
 document.getElementById("detailModal").querySelector(".modal-backdrop").addEventListener("click", () => {

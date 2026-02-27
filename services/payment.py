@@ -1,8 +1,11 @@
 """支付服务 - 支持模拟模式、支付宝当面付、易付通 V2"""
+import logging
 import time
 from urllib.parse import urlencode
 
 from config import settings
+
+log = logging.getLogger(__name__)
 
 
 def _normalize_pem_key(key: str) -> bytes:
@@ -161,7 +164,12 @@ async def create_payment(order_no: str, amount_cents: int, subject: str = "AI日
             url = f"{base_url}/api/pay/create"
             async with httpx.AsyncClient(timeout=15) as client:
                 resp = await client.post(url, data=params, headers={"Content-Type": "application/x-www-form-urlencoded", "Accept": "application/json"})
-            data = resp.json() if "application/json" in (resp.headers.get("content-type") or "") else {}
+            try:
+                data = resp.json()
+            except Exception:
+                data = {}
+            if resp.status_code == 200 and not data.get("code") in (0, "0") and data.get("msg"):
+                log.info("[易付通] 200 但 code!=0: code=%s msg=%s", data.get("code"), data.get("msg"))
             if resp.status_code >= 400:
                 return {
                     "success": False,
@@ -169,10 +177,13 @@ async def create_payment(order_no: str, amount_cents: int, subject: str = "AI日
                     "qr_code": "",
                     "message": data.get("msg") or f"易付通 API 返回 {resp.status_code}，请检查 QIUFK_API_URL 是否正确",
                 }
-            if data.get("code") == 0:
-                pay_info = data.get("pay_info", "")
-                pay_type = data.get("pay_type", "")
-                trade_no = data.get("trade_no", order_no)
+            # code 可能为 int 0 或 str "0"；业务数据可能在顶层或 data 字段内（见 introduction 文档）
+            code = data.get("code")
+            biz = data.get("data") if isinstance(data.get("data"), dict) else data
+            if code == 0 or code == "0":
+                pay_info = biz.get("pay_info", "")
+                pay_type = biz.get("pay_type", "")
+                trade_no = biz.get("trade_no", order_no)
                 # qrcode=二维码内容; jump=跳转URL，也可生成二维码供扫码
                 qr_code = pay_info if pay_type in ("qrcode", "jump") and pay_info else ""
                 return {

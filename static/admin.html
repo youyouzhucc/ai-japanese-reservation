@@ -10,10 +10,15 @@
   <div class="admin-container">
     <header class="admin-header">
       <h1>📋 预约单管理后台</h1>
-      <p>日本餐厅预订服务 - 预约单查看与管理</p>
+      <p>日本餐厅预订服务 - 预约单与注册用户管理</p>
+      <nav class="admin-tabs">
+        <button type="button" class="admin-tab active" data-tab="reservations">预约单</button>
+        <button type="button" class="admin-tab" data-tab="users">注册用户</button>
+      </nav>
       <a href="/" class="back-link">← 返回预约页面</a>
     </header>
 
+    <div id="reservationsPanel" class="admin-panel">
     <div class="admin-toolbar">
       <select id="statusFilter">
         <option value="">全部状态</option>
@@ -44,6 +49,28 @@
           <tr><td colspan="8" class="loading">加载中...</td></tr>
         </tbody>
       </table>
+    </div>
+
+    </div>
+
+    <div id="usersPanel" class="admin-panel hidden">
+      <div class="admin-toolbar">
+        <button id="refreshUsersBtn">刷新</button>
+      </div>
+      <div class="table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>手机号</th>
+              <th>注册时间</th>
+            </tr>
+          </thead>
+          <tbody id="usersTableBody">
+            <tr><td colspan="3" class="loading">加载中...</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <div id="detailModal" class="modal hidden">

@@ -81,3 +81,13 @@ class CallbackRequest(BaseModel):
 class ReservationStatusUpdate(BaseModel):
     """预约状态更新"""
     status: str = Field(..., description="新状态: cancelled 等")
+
+
+class UserResponse(BaseModel):
+    """注册用户响应"""
+    id: int
+    phone: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True

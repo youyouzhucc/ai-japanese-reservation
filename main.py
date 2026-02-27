@@ -31,7 +31,7 @@ from models import User, Reservation, ReservationStatus, get_engine, get_session
 from schemas import (
     AuthSendCodeRequest, AuthVerifyRequest, AuthResponse,
     ReservationCreate, ReservationResponse, PaymentRequest, PaymentResponse,
-    CallbackRequest, ReservationStatusUpdate,
+    CallbackRequest, ReservationStatusUpdate, UserResponse,
 )
 from services import create_payment, initiate_call, send_reservation_sms
 from services.restaurant_search import search_restaurants
@@ -349,6 +349,16 @@ async def list_reservations(skip: int = 0, limit: int = 50, db=Depends(get_db), 
         .order_by(Reservation.id.desc())
         .offset(skip)
         .limit(limit)
+    )
+    return result.scalars().all()
+
+
+@app.get("/api/admin/users", response_model=list[UserResponse])
+async def admin_list_users(skip: int = 0, limit: int = 200, db=Depends(get_db)):
+    """管理后台：注册用户列表"""
+    from sqlalchemy import select
+    result = await db.execute(
+        select(User).order_by(User.id.desc()).offset(skip).limit(limit)
     )
     return result.scalars().all()
 

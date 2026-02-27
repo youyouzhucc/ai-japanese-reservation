@@ -113,7 +113,49 @@ async function cancelOrder(orderNo) {
   }
 }
 
+async function loadUsers() {
+  const tbody = document.getElementById("usersTableBody");
+  tbody.innerHTML = '<tr><td colspan="3" class="loading">加载中...</td></tr>';
+
+  try {
+    const res = await fetch(`${API}/api/admin/users?limit=200`);
+    if (!res.ok) throw new Error("加载失败");
+    const list = await res.json();
+
+    if (list.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="3" class="empty">暂无注册用户</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = list
+      .map(
+        (u) => `
+      <tr>
+        <td>${u.id}</td>
+        <td>${u.phone}</td>
+        <td>${formatDate(u.created_at)}</td>
+      </tr>
+    `
+      )
+      .join("");
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="3" class="empty">加载失败: ${e.message}</td></tr>`;
+  }
+}
+
+document.querySelectorAll(".admin-tab").forEach((tab) => {
+  tab.onclick = () => {
+    document.querySelectorAll(".admin-tab").forEach((t) => t.classList.remove("active"));
+    tab.classList.add("active");
+    const panelId = tab.dataset.tab + "Panel";
+    document.querySelectorAll(".admin-panel").forEach((p) => p.classList.add("hidden"));
+    document.getElementById(panelId).classList.remove("hidden");
+    if (tab.dataset.tab === "users") loadUsers();
+  };
+});
+
 document.getElementById("refreshBtn").onclick = loadReservations;
+document.getElementById("refreshUsersBtn").onclick = loadUsers;
 document.getElementById("statusFilter").onchange = loadReservations;
 document.getElementById("closeModal").onclick = () => {
   document.getElementById("detailModal").classList.add("hidden");

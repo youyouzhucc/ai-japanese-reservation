@@ -30,6 +30,31 @@ body {
   color: #666;
   font-size: 0.95rem;
 }
+.admin-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+.admin-tab {
+  padding: 0.5rem 1rem;
+  border: 1px solid #d9d9d9;
+  background: #fff;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+.admin-tab:hover {
+  border-color: #1890ff;
+  color: #1890ff;
+}
+.admin-tab.active {
+  background: #1890ff;
+  border-color: #1890ff;
+  color: #fff;
+}
+.admin-panel.hidden {
+  display: none;
+}
 .back-link {
   color: #1890ff;
   text-decoration: none;

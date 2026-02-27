@@ -24,7 +24,10 @@ async function loadReservations() {
 
   try {
     const res = await fetch(`${API}/api/admin/reservations?limit=100`);
-    if (!res.ok) throw new Error("加载失败");
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`加载失败 (${res.status}): ${errText.slice(0, 100)}`);
+    }
     let list = await res.json();
 
     if (filter) {
@@ -32,7 +35,7 @@ async function loadReservations() {
     }
 
     if (list.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="8" class="empty">暂无预约单</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="8" class="empty">暂无预约单<br><small>去首页提交预约后这里会显示</small></td></tr>';
       return;
     }
 
@@ -63,7 +66,7 @@ async function loadReservations() {
       btn.onclick = () => cancelOrder(btn.dataset.order);
     });
   } catch (e) {
-    tbody.innerHTML = `<tr><td colspan="8" class="empty">加载失败: ${e.message}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8" class="empty error">加载失败: ${e.message}<br><small>请检查网络或服务是否正常</small></td></tr>`;
   }
 }
 
@@ -119,11 +122,14 @@ async function loadUsers() {
 
   try {
     const res = await fetch(`${API}/api/admin/users?limit=200`);
-    if (!res.ok) throw new Error("加载失败");
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`加载失败 (${res.status}): ${errText.slice(0, 100)}`);
+    }
     const list = await res.json();
 
     if (list.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="3" class="empty">暂无注册用户</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="3" class="empty">暂无注册用户<br><small>用户登录/注册后这里会显示</small></td></tr>';
       return;
     }
 
@@ -139,7 +145,7 @@ async function loadUsers() {
       )
       .join("");
   } catch (e) {
-    tbody.innerHTML = `<tr><td colspan="3" class="empty">加载失败: ${e.message}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="3" class="empty error">加载失败: ${e.message}<br><small>请检查网络或服务是否正常</small></td></tr>`;
   }
 }
 
@@ -181,11 +187,20 @@ async function loadDbStatus() {
       el.textContent = "⚠️ SQLite（数据会丢失）";
       el.title = d.warning + "\n" + d.hint;
       el.className = "db-status db-warning";
+      // 在表格上方显示醒目提示
+      const notice = document.getElementById("dbNotice");
+      if (notice) {
+        notice.innerHTML = `<strong>数据会丢失：</strong>当前使用 SQLite，Railway 每次 redeploy 后数据会清空。请添加 PostgreSQL 数据库（+ New → Database → PostgreSQL）以持久化数据。`;
+        notice.classList.remove("hidden");
+      }
     } else {
       el.textContent = "✓ PostgreSQL";
       el.className = "db-status db-ok";
+      const notice = document.getElementById("dbNotice");
+      if (notice) notice.classList.add("hidden");
     }
   } catch {
-    document.getElementById("dbStatus").textContent = "";
+    const el = document.getElementById("dbStatus");
+    if (el) el.textContent = "";
   }
 }

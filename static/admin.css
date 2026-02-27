@@ -52,44 +52,6 @@ body {
   border-color: #1890ff;
   color: #fff;
 }
-.admin-header-actions {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-top: 0.5rem;
-}
-.db-status {
-  font-size: 0.85rem;
-  padding: 0.2rem 0.5rem;
-  border-radius: 4px;
-}
-.db-ok {
-  background: #f6ffed;
-  color: #52c41a;
-}
-.db-warning {
-  background: #fff7e6;
-  color: #d46b08;
-  cursor: help;
-}
-.db-notice {
-  background: #fff7e6;
-  border: 1px solid #ffd591;
-  color: #d46b08;
-  padding: 0.75rem 1rem;
-  border-radius: 8px;
-  margin-top: 1rem;
-  font-size: 0.9rem;
-}
-.db-notice code {
-  background: rgba(0,0,0,0.06);
-  padding: 0.1em 0.4em;
-  border-radius: 4px;
-  font-size: 0.9em;
-}
-.db-notice.hidden {
-  display: none;
-}
 .admin-panel {
   display: block;
 }

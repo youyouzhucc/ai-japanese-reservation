@@ -176,31 +176,3 @@ document.getElementById("detailModal").onclick = (e) => {
 document.getElementById("reservationsPanel").classList.remove("hidden");
 document.getElementById("usersPanel").classList.add("hidden");
 loadReservations();
-loadDbStatus();
-
-async function loadDbStatus() {
-  try {
-    const res = await fetch(`${API}/api/admin/db-status`);
-    const d = await res.json();
-    const el = document.getElementById("dbStatus");
-    if (d.type === "sqlite") {
-      el.textContent = "⚠️ SQLite（数据会丢失）";
-      const envInfo = d.env_check ? " 环境变量: " + JSON.stringify(d.env_check) : "";
-      el.title = d.warning + "\n" + d.hint + envInfo;
-      el.className = "db-status db-warning";
-      const notice = document.getElementById("dbNotice");
-      if (notice) {
-        notice.innerHTML = `<strong>数据会丢失：</strong>当前使用 SQLite。在 Railway Web Service 的 Variables 中添加 <code>DATABASE_URL</code>，值设为 <code>\${{Postgres.DATABASE_URL}}</code>（Postgres 为你的 PostgreSQL 服务名），保存后 Redeploy。`;
-        notice.classList.remove("hidden");
-      }
-    } else {
-      el.textContent = "✓ PostgreSQL";
-      el.className = "db-status db-ok";
-      const notice = document.getElementById("dbNotice");
-      if (notice) notice.classList.add("hidden");
-    }
-  } catch {
-    const el = document.getElementById("dbStatus");
-    if (el) el.textContent = "";
-  }
-}

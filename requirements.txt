@@ -18,6 +18,9 @@ python-alipay-sdk==3.4.0
 # JWT 登录认证
 PyJWT==2.8.0
 
+# 易付通 V2 RSA 签名
+cryptography>=42.0.0
+
 # 阿里云短信（验证码 + 预约通知）
 alibabacloud-dysmsapi20170525>=3.0.0
 # 阿里云融合认证套餐包（号码认证服务）

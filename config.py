@@ -42,6 +42,12 @@ class Settings(BaseSettings):
     alipay_public_key: str = ""
     alipay_notify_url: str = ""
     alipay_sandbox: bool = False
+    # 易付通 V2
+    qiufk_pid: str = ""
+    qiufk_private_key: str = ""
+    qiufk_public_key: str = ""
+    qiufk_api_url: str = ""  # 如 https://pay.qiufk.cn
+    qiufk_notify_url: str = ""  # 如 https://你的域名/api/qiufk/notify
     twilio_account_sid: str = ""
     twilio_auth_token: str = ""
     twilio_phone_number: str = ""

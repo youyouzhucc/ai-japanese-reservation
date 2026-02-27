@@ -36,7 +36,7 @@ from schemas import (
 )
 from services import create_payment, initiate_call, send_reservation_sms
 from services.restaurant_search import search_restaurants
-from services.payment import verify_alipay_notify
+from services.payment import verify_alipay_notify, verify_qiufk_notify
 from services.auth import store_verification_code, verify_code, create_token, decode_token
 from services.sms import send_verification_code
 
@@ -129,9 +129,15 @@ async def payment_status():
     elif mode == "alipay":
         ok = bool(settings.alipay_app_id and settings.alipay_private_key and settings.alipay_public_key and settings.alipay_notify_url)
         hint = "支付宝当面付" if ok else "缺少 ALIPAY_APP_ID / ALIPAY_PRIVATE_KEY / ALIPAY_PUBLIC_KEY / ALIPAY_NOTIFY_URL"
-    elif mode in ("epay", "qiufk_v2", "vmq"):
+    elif mode == "qiufk_v2":
+        ok = bool(
+            settings.qiufk_pid and settings.qiufk_private_key and settings.qiufk_public_key
+            and settings.qiufk_api_url and settings.qiufk_notify_url
+        )
+        hint = "易付通 V2" if ok else "缺少 QIUFK_PID / QIUFK_PRIVATE_KEY / QIUFK_PUBLIC_KEY / QIUFK_API_URL / QIUFK_NOTIFY_URL"
+    elif mode in ("epay", "vmq"):
         ok = False
-        hint = f"当前代码不支持 {mode}，请使用 mock 或 alipay"
+        hint = f"当前代码不支持 {mode}，请使用 mock、alipay 或 qiufk_v2"
     else:
         hint = f"未知 payment_mode={mode}，支持: mock, alipay"
     return {"payment_mode": mode, "configured": ok, "hint": hint}
@@ -307,6 +313,32 @@ async def alipay_notify(request: Request, db=Depends(get_db)):
     if not data:
         return PlainTextResponse("fail")
     ok, order_no = verify_alipay_notify(dict(data))
+    if not ok or not order_no:
+        return PlainTextResponse("fail")
+    result = await db.execute(select(Reservation).where(Reservation.order_no == order_no))
+    r = result.scalar_one_or_none()
+    if not r or r.status != ReservationStatus.PENDING.value:
+        return PlainTextResponse("success")
+    r.status = ReservationStatus.RESERVING.value
+    r.payment_id = data.get("trade_no", r.payment_id)
+    await db.commit()
+    asyncio.create_task(_run_ai_call_and_notify(r.id))
+    return PlainTextResponse("success")
+
+
+@app.api_route("/api/qiufk/notify", methods=["GET", "POST"])
+async def qiufk_notify(request: Request, db=Depends(get_db)):
+    """易付通 V2 异步通知回调。支付成功后更新状态并触发 AI 电话"""
+    from sqlalchemy import select
+    if request.method == "GET":
+        data = dict(request.query_params)
+    else:
+        body = await request.body()
+        from urllib.parse import parse_qs
+        data = {k: v[0] if isinstance(v, list) else v for k, v in parse_qs(body.decode()).items()}
+    if not data:
+        return PlainTextResponse("fail")
+    ok, order_no = verify_qiufk_notify(dict(data))
     if not ok or not order_no:
         return PlainTextResponse("fail")
     result = await db.execute(select(Reservation).where(Reservation.order_no == order_no))

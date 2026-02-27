@@ -398,9 +398,8 @@ function init() {
   initHeaderNavLinks();
   initAuthTriggers();
   updateAuthUI();
-  // 仅当从子页重定向回来时显示登录框，首次进入不主动弹出
+  // 清理 URL 中的 ?login=1，不主动弹出登录框（首次进入、刷新均不弹）
   if (new URLSearchParams(location.search).get("login") === "1") {
-    document.getElementById("loginModal")?.classList.remove("hidden");
     history.replaceState(null, "", location.pathname);
   }
 }

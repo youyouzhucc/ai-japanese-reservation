@@ -84,10 +84,11 @@ Railway 文件系统是**临时的**，使用默认 SQLite 时，**每次 redepl
 4. **Redeploy**：修改变量后，在 Deployments 页点击 Redeploy 确保新变量被注入
 5. **验证**：部署完成后访问 `/api/auth/sms-status` 检查 `env_in_process` 是否全为 `true`
 
-### 数据丢失
+### 数据丢失 / 登录后提示「用户不存在」
 
-- SQLite 在 Railway 上会随容器重启而清空
-- 生产环境务必使用 PostgreSQL
+- SQLite 在 Railway 上会随容器重启或 redeploy 而清空
+- 生产环境务必添加 PostgreSQL 插件，并确保 `DATABASE_URL` 已注入
+- 登录态有效期默认 30 天（`JWT_EXPIRE_HOURS=720`），401 时自动清除 token 并弹出登录框
 
 ---
 

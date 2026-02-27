@@ -38,6 +38,18 @@ function getAuthHeaders() {
   return h;
 }
 
+/** 带认证的 fetch：401 时自动清除 token 并弹出登录框，登录态持久直到退出或 token 过期 */
+async function fetchWithAuth(url, init = {}) {
+  const headers = { ...getAuthHeaders(), ...(init.headers || {}) };
+  const res = await fetch(url, { ...init, headers });
+  if (res.status === 401) {
+    clearToken();
+    showLoginModal();
+    throw new Error("登录已过期，请重新登录");
+  }
+  return res;
+}
+
 function applyI18n() {
   document.getElementById("pageTitle").textContent = "🍣 " + t("title");
   document.getElementById("pageSubtitle").textContent = t("subtitle");
@@ -71,7 +83,7 @@ function initRestaurantSearch() {
     resultsEl.innerHTML = '<div class="search-result-item" style="color:#999">搜索中...</div>';
     resultsEl.classList.remove("hidden");
     try {
-      const res = await fetch(`${API}/api/restaurants/search?q=${encodeURIComponent(q)}`, { headers: getAuthHeaders() });
+      const res = await fetchWithAuth(`${API}/api/restaurants/search?q=${encodeURIComponent(q)}`);
       if (!res.ok) {
         resultsEl.innerHTML = '<div class="search-result-item" style="color:#999">搜索失败，请重试</div>';
         return;
@@ -461,9 +473,8 @@ document.getElementById("reservationForm").addEventListener("submit", async (e) 
   };
 
   try {
-    const res = await fetch(`${API}/api/reservations`, {
+    const res = await fetchWithAuth(`${API}/api/reservations`, {
       method: "POST",
-      headers: getAuthHeaders(),
       body: JSON.stringify(payload),
     });
     if (!res.ok) {
@@ -492,9 +503,8 @@ async function doPay(order, reservationDatetime) {
   btn.disabled = true;
   btn.textContent = "支付中...";
   try {
-    const res = await fetch(`${API}/api/pay`, {
+    const res = await fetchWithAuth(`${API}/api/pay`, {
       method: "POST",
-      headers: getAuthHeaders(),
       body: JSON.stringify({ order_no: orderNo, amount_cents: 100 }),
     });
     if (!res.ok) {
@@ -527,7 +537,7 @@ async function doPay(order, reservationDatetime) {
 
 async function checkStatus(orderNo) {
   try {
-    const res = await fetch(`${API}/api/reservations/${orderNo}`, { headers: getAuthHeaders() });
+    const res = await fetchWithAuth(`${API}/api/reservations/${orderNo}`);
     if (!res.ok) throw new Error("查询失败");
     const r = await res.json();
     const dt = new Date(r.reservation_datetime).toLocaleString("zh-CN");

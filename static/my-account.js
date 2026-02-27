@@ -37,7 +37,14 @@ function checkAuth() {
 
 function loadAccount() {
   fetch(`${API}/api/auth/me`, { headers: getAuthHeaders() })
-    .then((r) => (r.ok ? r.json() : null))
+    .then((r) => {
+      if (r.status === 401) {
+        clearToken();
+        redirectToLogin();
+        return null;
+      }
+      return r.ok ? r.json() : null;
+    })
     .then((d) => {
       if (d && d.phone) {
         document.getElementById("phoneDisplay").textContent = maskPhone(d.phone);

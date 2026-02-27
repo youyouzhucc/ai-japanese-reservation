@@ -66,7 +66,7 @@ async def get_current_user(
     result = await db.execute(select(User).where(User.id == int(user_id)))
     user = result.scalar_one_or_none()
     if not user:
-        raise HTTPException(401, "用户不存在")
+        raise HTTPException(401, "登录已过期，请重新登录")
     return user
 
 

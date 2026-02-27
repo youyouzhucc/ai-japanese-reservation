@@ -36,7 +36,14 @@ function maskPhone(phone) {
 function updateUserInfo() {
   const el = document.getElementById("userInfo");
   fetch(`${API}/api/auth/me`, { headers: getAuthHeaders() })
-    .then((r) => (r.ok ? r.json() : null))
+    .then((r) => {
+      if (r.status === 401) {
+        clearToken();
+        redirectToLogin();
+        return null;
+      }
+      return r.ok ? r.json() : null;
+    })
     .then((d) => {
       if (d) el.textContent = maskPhone(d.phone);
       else redirectToLogin();
@@ -64,6 +71,7 @@ function loadReservations() {
   fetch(`${API}/api/reservations?limit=50`, { headers: getAuthHeaders() })
     .then((r) => {
       if (r.status === 401) {
+        clearToken();
         redirectToLogin();
         return [];
       }
@@ -108,7 +116,14 @@ function escapeHtml(s) {
 
 function showDetail(orderNo) {
   fetch(`${API}/api/reservations/${orderNo}`, { headers: getAuthHeaders() })
-    .then((r) => (r.ok ? r.json() : null))
+    .then((r) => {
+      if (r.status === 401) {
+        clearToken();
+        redirectToLogin();
+        return null;
+      }
+      return r.ok ? r.json() : null;
+    })
     .then((r) => {
       if (!r) return;
       const body = document.getElementById("detailBody");
@@ -144,7 +159,14 @@ function cancelOrder(orderNo, modal) {
     headers: getAuthHeaders(),
     body: JSON.stringify({ status: "cancelled" }),
   })
-    .then((r) => (r.ok ? r.json() : null))
+    .then((r) => {
+      if (r.status === 401) {
+        clearToken();
+        redirectToLogin();
+        return null;
+      }
+      return r.ok ? r.json() : null;
+    })
     .then(() => {
       modal.classList.add("hidden");
       loadReservations();

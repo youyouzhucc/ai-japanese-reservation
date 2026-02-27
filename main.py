@@ -356,12 +356,20 @@ async def list_reservations(skip: int = 0, limit: int = 50, db=Depends(get_db), 
 @app.get("/api/admin/db-status")
 async def admin_db_status():
     """管理后台：数据库状态（用于排查数据丢失）"""
+    import os
+
     url = settings.database_url
+    env_has = {
+        "DATABASE_URL": bool(os.environ.get("DATABASE_URL")),
+        "DATABASE_PRIVATE_URL": bool(os.environ.get("DATABASE_PRIVATE_URL")),
+        "POSTGRES_URL": bool(os.environ.get("POSTGRES_URL")),
+    }
     if "sqlite" in url:
         return {
             "type": "sqlite",
-            "warning": "SQLite 数据在 Railway 重启/ redeploy 后会丢失，请添加 PostgreSQL 数据库",
-            "hint": "Railway 项目内 + New → Database → PostgreSQL，会自动注入 DATABASE_URL",
+            "warning": "SQLite 数据在 Railway 重启/redeploy 后会丢失",
+            "hint": "在 Web Service 的 Variables 中添加 DATABASE_URL，值引用 PostgreSQL 服务（如 ${{Postgres.DATABASE_URL}}），然后 Redeploy",
+            "env_check": env_has,
         }
     return {"type": "postgresql", "ok": True}
 

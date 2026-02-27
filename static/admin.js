@@ -185,12 +185,12 @@ async function loadDbStatus() {
     const el = document.getElementById("dbStatus");
     if (d.type === "sqlite") {
       el.textContent = "⚠️ SQLite（数据会丢失）";
-      el.title = d.warning + "\n" + d.hint;
+      const envInfo = d.env_check ? " 环境变量: " + JSON.stringify(d.env_check) : "";
+      el.title = d.warning + "\n" + d.hint + envInfo;
       el.className = "db-status db-warning";
-      // 在表格上方显示醒目提示
       const notice = document.getElementById("dbNotice");
       if (notice) {
-        notice.innerHTML = `<strong>数据会丢失：</strong>当前使用 SQLite，Railway 每次 redeploy 后数据会清空。请添加 PostgreSQL 数据库（+ New → Database → PostgreSQL）以持久化数据。`;
+        notice.innerHTML = `<strong>数据会丢失：</strong>当前使用 SQLite。在 Railway Web Service 的 Variables 中添加 <code>DATABASE_URL</code>，值设为 <code>\${{Postgres.DATABASE_URL}}</code>（Postgres 为你的 PostgreSQL 服务名），保存后 Redeploy。`;
         notice.classList.remove("hidden");
       }
     } else {

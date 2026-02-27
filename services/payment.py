@@ -161,7 +161,14 @@ async def create_payment(order_no: str, amount_cents: int, subject: str = "AI日
             url = f"{base_url}/api/pay/create"
             async with httpx.AsyncClient(timeout=15) as client:
                 resp = await client.post(url, data=params, headers={"Content-Type": "application/x-www-form-urlencoded", "Accept": "application/json"})
-            data = resp.json() if resp.headers.get("content-type", "").startswith("application/json") else {}
+            data = resp.json() if "application/json" in (resp.headers.get("content-type") or "") else {}
+            if resp.status_code >= 400:
+                return {
+                    "success": False,
+                    "payment_id": "",
+                    "qr_code": "",
+                    "message": data.get("msg") or f"易付通 API 返回 {resp.status_code}，请检查 QIUFK_API_URL 是否正确",
+                }
             if data.get("code") == 0:
                 pay_info = data.get("pay_info", "")
                 pay_type = data.get("pay_type", "")

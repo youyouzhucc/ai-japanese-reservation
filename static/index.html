@@ -4,23 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>日本餐厅预订服务</title>
-  <link rel="stylesheet" href="/static/style.css">
+  <link rel="stylesheet" href="/static/style.css?v=2">
   <link rel="preload" href="/static/images/banner-1.jpg" as="image">
 </head>
 <body>
-  <header class="page-header">
-    <div class="banner">
-      <div class="banner-track">
-        <div class="banner-slide"><img src="/static/images/banner-1.jpg" alt="寿司" loading="eager" width="400" height="267"></div>
-        <div class="banner-slide"><img src="/static/images/banner-2.jpg" alt="寿司拼盘" loading="lazy" width="266" height="400"></div>
-        <div class="banner-slide"><img src="/static/images/banner-3.jpg" alt="章鱼烧" loading="lazy" width="400" height="267"></div>
-        <div class="banner-slide"><img src="/static/images/banner-4.jpg" alt="炸猪排" loading="lazy" width="400" height="267"></div>
-      </div>
-    </div>
-  </header>
   <main class="page-content">
   <div class="container">
-    <header class="form-header">
+    <header class="top-module">
       <div class="form-header-title-row">
         <h1 id="pageTitle">🍣 日本餐厅预订服务</h1>
         <nav class="form-header-nav">
@@ -29,6 +19,9 @@
         </nav>
       </div>
       <p id="pageSubtitle">填写预约信息，AI 将自动致电餐厅完成日语预约</p>
+      <div class="top-module-image">
+        <img src="/static/images/banner-1.jpg" alt="寿司" loading="eager" width="400" height="267">
+      </div>
     </header>
 
     <form id="reservationForm" class="form">

@@ -48,6 +48,7 @@ class Settings(BaseSettings):
     qiufk_public_key: str = ""
     qiufk_api_url: str = ""  # 如 https://pay.qiufk.cn
     qiufk_notify_url: str = ""  # 如 https://你的域名/api/qiufk/notify
+    qiufk_sign_exclude_sign_type: bool = False  # 签名时排除 sign_type（若报签名校验失败可设为 true 重试）
     twilio_account_sid: str = ""
     twilio_auth_token: str = ""
     twilio_phone_number: str = ""

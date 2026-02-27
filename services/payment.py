@@ -42,9 +42,12 @@ def _qiufk_load_private_key(private_key: str):
         raise
 
 
-def _qiufk_sign(params: dict, private_key: str) -> str:
+def _qiufk_sign(params: dict, private_key: str, exclude_sign_type: bool = False) -> str:
     """易付通 RSA 签名：参数按 ASCII 排序，排除 sign，空值不参与，SHA256WithRSA + Base64"""
-    filtered = {k: v for k, v in params.items() if v is not None and v != "" and k != "sign"}
+    exclude = {"sign"}
+    if exclude_sign_type:
+        exclude.add("sign_type")
+    filtered = {k: str(v) for k, v in params.items() if v is not None and v != "" and k not in exclude}
     sign_str = "&".join(f"{k}={v}" for k, v in sorted(filtered.items()))
     import base64
     from cryptography.hazmat.primitives import hashes
@@ -135,6 +138,7 @@ async def create_payment(order_no: str, amount_cents: int, subject: str = "AI日
     if settings.payment_mode == "qiufk_v2" and settings.qiufk_pid and settings.qiufk_private_key and settings.qiufk_public_key and settings.qiufk_api_url and settings.qiufk_notify_url:
         try:
             import httpx
+            # pay_create 文档：timestamp 为 10 位 Unix 秒
             ts = str(int(time.time()))
             money = str(round(amount_cents / 100, 2))
             base_url = settings.qiufk_api_url.rstrip("/")
@@ -153,7 +157,7 @@ async def create_payment(order_no: str, amount_cents: int, subject: str = "AI日
                 "timestamp": ts,
                 "sign_type": "RSA",
             }
-            params["sign"] = _qiufk_sign(params, settings.qiufk_private_key)
+            params["sign"] = _qiufk_sign(params, settings.qiufk_private_key, exclude_sign_type=getattr(settings, "qiufk_sign_exclude_sign_type", False))
             url = f"{base_url}/api/pay/create"
             async with httpx.AsyncClient(timeout=15) as client:
                 resp = await client.post(url, data=params, headers={"Content-Type": "application/x-www-form-urlencoded", "Accept": "application/json"})

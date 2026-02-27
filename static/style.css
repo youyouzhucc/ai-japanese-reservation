@@ -6,6 +6,11 @@ a, button {
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
 }
+.page-header {
+  margin: -2rem -2rem 0 -2rem;
+  margin-bottom: 1.5rem;
+  background: #f5f0eb;
+}
 .phone-input-group {
   display: flex;
   align-items: center;
@@ -269,26 +274,39 @@ a, button {
   pointer-events: none;
   z-index: -1;
 }
-.top-module {
-  margin-bottom: 1.5rem;
-}
-.top-module-inner {
-  max-width: 560px;
-  margin: 0 auto;
-  padding: 0 2rem;
-}
-.top-module-image {
-  margin-top: 1rem;
-  border-radius: 12px;
+.banner {
+  width: 100%;
   overflow: hidden;
-  width: 100%;
-  max-width: 400px;
+  touch-action: pan-x;
 }
-.top-module-image img {
+.banner-track {
+  display: flex;
   width: 100%;
-  height: auto;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  gap: 0;
+}
+.banner-track::-webkit-scrollbar {
+  display: none;
+}
+.banner-slide {
+  flex: 0 0 25%;
+  width: 25%;
+  min-width: 25%;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+}
+.banner-slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
   display: block;
-  vertical-align: top;
 }
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -307,6 +325,9 @@ body {
   padding: 1.5rem;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
 }
+.form-header {
+  margin-bottom: 2rem;
+}
 .form-header-title-row {
   display: flex;
   align-items: center;
@@ -314,8 +335,7 @@ body {
   gap: 1rem;
   flex-wrap: wrap;
 }
-.form-header h1,
-.top-module h1 {
+.form-header h1 {
   font-size: 1.8rem;
   margin: 0 0 0.5rem;
   color: #1a1a1a;
@@ -342,11 +362,9 @@ body {
   color: #1a1a1a;
   text-decoration: none;
 }
-.form-header p,
-.top-module p {
+.form-header p {
   color: #666;
   font-size: 0.95rem;
-  margin: 0;
 }
 .form-header-link {
   color: #1890ff;
@@ -684,14 +702,14 @@ button.secondary {
     padding-right: max(1rem, env(safe-area-inset-right, 0px));
     padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
   }
-  .top-module-inner {
-    padding: 0 1rem;
+  .page-header {
+    margin-left: -1rem;
+    margin-right: -1rem;
   }
   .container {
     padding: 1rem;
   }
-  .form-header h1,
-  .top-module h1 {
+  .form-header h1 {
     font-size: 1.4rem;
   }
   .form-header-title-row {
@@ -734,5 +752,10 @@ button.secondary {
     padding: 0.5rem 0;
     display: inline-flex;
     align-items: center;
+  }
+  .banner-slide {
+    flex: 0 0 80%;
+    width: 80%;
+    min-width: 80%;
   }
 }

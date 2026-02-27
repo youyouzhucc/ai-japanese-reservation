@@ -64,6 +64,16 @@
   max-height: 300px;
   overflow-y: auto;
 }
+.detail-content .modal-actions button {
+  min-height: 2.75rem;
+  padding: 0.6rem 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.detail-content .modal-actions button.secondary {
+  margin-top: 0;
+}
 .cancel-btn {
   background: #dc3545 !important;
 }

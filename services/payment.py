@@ -177,11 +177,14 @@ async def create_payment(order_no: str, amount_cents: int, subject: str = "AI日
                 "message": data.get("msg", "易付通接口调用失败"),
             }
         except Exception as e:
+            err = str(e)
+            if "Name or service not known" in err or "Errno -2" in err or "getaddrinfo failed" in err:
+                err = f"无法解析 QIUFK_API_URL 域名，请检查 {settings.qiufk_api_url} 是否正确。易付通 API 地址需从商户后台获取。"
             return {
                 "success": False,
                 "payment_id": "",
                 "qr_code": "",
-                "message": str(e),
+                "message": err,
             }
     return {
         "success": False,

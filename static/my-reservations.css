@@ -77,6 +77,10 @@
 .cancel-btn {
   background: #dc3545 !important;
 }
+.pay-btn {
+  background: #28a745 !important;
+  color: #fff !important;
+}
 
 /* 我的账号页 */
 .account-card {

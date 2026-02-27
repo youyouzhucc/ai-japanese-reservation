@@ -2,6 +2,7 @@
 AI 日语电话预约系统 - 主入口
 """
 import asyncio
+import logging
 from pathlib import Path
 import uuid
 from datetime import datetime
@@ -41,6 +42,7 @@ from services.sms import send_verification_code
 
 engine = get_engine(settings.database_url)
 SessionLocal = get_session_maker(engine)
+log = logging.getLogger(__name__)
 
 
 async def get_db():
@@ -113,6 +115,26 @@ async def auth_sms_status():
         "env_total_count": len(os.environ),
         "hint": "若 env_in_process 全为 false：1) 点击 Variables 页的 Deploy 按钮保存 2) 确认变量在正确 Environment(Production) 3) Redeploy 服务",
     }
+
+
+@app.get("/api/payment-status")
+async def payment_status():
+    """调试用：检查支付配置（不暴露密钥）"""
+    mode = settings.payment_mode or "mock"
+    ok = False
+    hint = ""
+    if mode == "mock":
+        ok = True
+        hint = "模拟模式：无需真实支付"
+    elif mode == "alipay":
+        ok = bool(settings.alipay_app_id and settings.alipay_private_key and settings.alipay_public_key and settings.alipay_notify_url)
+        hint = "支付宝当面付" if ok else "缺少 ALIPAY_APP_ID / ALIPAY_PRIVATE_KEY / ALIPAY_PUBLIC_KEY / ALIPAY_NOTIFY_URL"
+    elif mode in ("epay", "qiufk_v2", "vmq"):
+        ok = False
+        hint = f"当前代码不支持 {mode}，请使用 mock 或 alipay"
+    else:
+        hint = f"未知 payment_mode={mode}，支持: mock, alipay"
+    return {"payment_mode": mode, "configured": ok, "hint": hint}
 
 
 @app.post("/api/auth/send-code")
@@ -201,7 +223,9 @@ async def pay(req: PaymentRequest, db=Depends(get_db), user: User = Depends(get_
     subject = f"AI日语预约-{r.restaurant_name}"
     pay_result = await create_payment(req.order_no, req.amount_cents or 100, subject)
     if not pay_result["success"]:
-        raise HTTPException(400, pay_result["message"])
+        msg = pay_result["message"]
+        log.warning("[支付] 创建失败: order_no=%s, mode=%s, msg=%s", req.order_no, settings.payment_mode, msg)
+        raise HTTPException(400, msg)
 
     r.payment_id = pay_result["payment_id"]
     r.amount_cents = req.amount_cents or 100

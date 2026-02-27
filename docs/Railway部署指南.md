@@ -17,15 +17,20 @@
 4. 授权 Railway 访问你的 GitHub，选择仓库 `ai-japanese-reservation`
 5. Railway 会自动检测到 `Procfile` 和 `requirements.txt`，开始构建
 
-### 2. 配置数据库（推荐）
+### 2. 配置数据库（必做，否则数据会丢失）
 
-Railway 文件系统是临时的，**SQLite 数据会在重启后丢失**。生产环境建议使用 Railway 的 PostgreSQL：
+Railway 文件系统是**临时的**，使用默认 SQLite 时，**每次 redeploy 或重启后预约/用户数据会全部丢失**。
 
-1. 在项目内点击 **+ New** → **Database** → **PostgreSQL**
-2. Railway 会自动创建数据库并注入 `DATABASE_URL` 环境变量
+**务必添加 PostgreSQL：**
+
+1. 在 Railway 项目内点击 **+ New** → **Database** → **PostgreSQL**
+2. Railway 会自动创建数据库并注入 `DATABASE_URL` 环境变量到你的 Service
 3. 在 **Variables** 中确认存在 `DATABASE_URL`（格式类似 `postgresql://...`）
+4. 点击 **Deploy** 或 **Redeploy** 使新变量生效
 
-**注意**：当前项目默认使用 SQLite。若使用 PostgreSQL，需在 `requirements.txt` 中添加 `asyncpg`，并将 `DATABASE_URL` 格式改为 `postgresql+asyncpg://...`。详见下方「PostgreSQL 支持」。
+项目已内置 PostgreSQL 支持（`config.py` 会自动将 `postgresql://` 转为 `postgresql+asyncpg://`），无需手动修改。
+
+**若 DATABASE_URL 未自动注入**：点击你的 Web Service → **Variables** → **Add Variable** → 从 PostgreSQL 服务选择 `DATABASE_URL` 引用。
 
 ### 3. 环境变量（可选）
 

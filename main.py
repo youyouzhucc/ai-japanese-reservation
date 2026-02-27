@@ -353,6 +353,19 @@ async def list_reservations(skip: int = 0, limit: int = 50, db=Depends(get_db), 
     return result.scalars().all()
 
 
+@app.get("/api/admin/db-status")
+async def admin_db_status():
+    """管理后台：数据库状态（用于排查数据丢失）"""
+    url = settings.database_url
+    if "sqlite" in url:
+        return {
+            "type": "sqlite",
+            "warning": "SQLite 数据在 Railway 重启/ redeploy 后会丢失，请添加 PostgreSQL 数据库",
+            "hint": "Railway 项目内 + New → Database → PostgreSQL，会自动注入 DATABASE_URL",
+        }
+    return {"type": "postgresql", "ok": True}
+
+
 @app.get("/api/admin/users", response_model=list[UserResponse])
 async def admin_list_users(skip: int = 0, limit: int = 200, db=Depends(get_db)):
     """管理后台：注册用户列表"""

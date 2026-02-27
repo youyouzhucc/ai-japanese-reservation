@@ -170,3 +170,22 @@ document.getElementById("detailModal").onclick = (e) => {
 document.getElementById("reservationsPanel").classList.remove("hidden");
 document.getElementById("usersPanel").classList.add("hidden");
 loadReservations();
+loadDbStatus();
+
+async function loadDbStatus() {
+  try {
+    const res = await fetch(`${API}/api/admin/db-status`);
+    const d = await res.json();
+    const el = document.getElementById("dbStatus");
+    if (d.type === "sqlite") {
+      el.textContent = "⚠️ SQLite（数据会丢失）";
+      el.title = d.warning + "\n" + d.hint;
+      el.className = "db-status db-warning";
+    } else {
+      el.textContent = "✓ PostgreSQL";
+      el.className = "db-status db-ok";
+    }
+  } catch {
+    document.getElementById("dbStatus").textContent = "";
+  }
+}

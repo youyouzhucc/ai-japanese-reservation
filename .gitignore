@@ -1,4 +1,5 @@
 .env
+*_upload.txt
 *.pem
 *.crt
 *.csr

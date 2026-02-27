@@ -4,13 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>日本餐厅预订服务</title>
-  <link rel="stylesheet" href="/static/style.css?v=2">
+  <link rel="stylesheet" href="/static/style.css?v=3">
   <link rel="preload" href="/static/images/banner-1.jpg" as="image">
 </head>
 <body>
   <main class="page-content">
-  <div class="container">
-    <header class="top-module">
+  <header class="top-module">
+    <div class="top-module-inner">
       <div class="form-header-title-row">
         <h1 id="pageTitle">🍣 日本餐厅预订服务</h1>
         <nav class="form-header-nav">
@@ -22,8 +22,10 @@
       <div class="top-module-image">
         <img src="/static/images/banner-1.jpg" alt="寿司" loading="eager" width="400" height="267">
       </div>
-    </header>
+    </div>
+  </header>
 
+  <div class="container">
     <form id="reservationForm" class="form">
       <section>
         <h2 data-i18n="restaurant">餐厅信息</h2>

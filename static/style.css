@@ -270,20 +270,25 @@ a, button {
   z-index: -1;
 }
 .top-module {
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
+}
+.top-module-inner {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 0 2rem;
 }
 .top-module-image {
-  width: 100%;
   margin-top: 1rem;
   border-radius: 12px;
   overflow: hidden;
-  aspect-ratio: 400 / 267;
+  width: 100%;
+  max-width: 400px;
 }
 .top-module-image img {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: auto;
   display: block;
+  vertical-align: top;
 }
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -678,6 +683,9 @@ button.secondary {
     padding-left: max(1rem, env(safe-area-inset-left, 0px));
     padding-right: max(1rem, env(safe-area-inset-right, 0px));
     padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+  }
+  .top-module-inner {
+    padding: 0 1rem;
   }
   .container {
     padding: 1rem;

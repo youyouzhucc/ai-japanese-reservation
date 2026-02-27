@@ -2,13 +2,15 @@ const API = "";
 const AUTH_KEY = "reservation_auth_token";
 
 window.checkAuthNav = function(e, el) {
+  e.preventDefault();
+  e.stopPropagation();
   if (!localStorage.getItem(AUTH_KEY)) {
-    e.preventDefault();
-    e.stopPropagation();
     document.getElementById("loginModal")?.classList.remove("hidden");
     return false;
   }
-  return true;
+  const href = el?.dataset?.href || el?.getAttribute("data-href");
+  if (href) window.location.href = href;
+  return false;
 };
 window.checkAuthSubmit = function(e) {
   if (!localStorage.getItem(AUTH_KEY)) {
@@ -283,7 +285,7 @@ function updateAuthUI() {
 }
 
 function initHeaderNavLinks() {
-  document.querySelectorAll('a[href="/my-account"], a[href="/my-reservations"]').forEach((link) => {
+  document.querySelectorAll('#myAccountLink, #myReservationsLink').forEach((link) => {
     link.addEventListener("click", (e) => {
       if (!localStorage.getItem(AUTH_KEY)) {
         e.preventDefault();
@@ -396,8 +398,10 @@ function init() {
   initHeaderNavLinks();
   initAuthTriggers();
   updateAuthUI();
+  // 仅当从子页重定向回来时显示登录框，首次进入不主动弹出
   if (new URLSearchParams(location.search).get("login") === "1") {
     document.getElementById("loginModal")?.classList.remove("hidden");
+    history.replaceState(null, "", location.pathname);
   }
 }
 

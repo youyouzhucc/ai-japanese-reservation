@@ -596,7 +596,7 @@ async def admin_test_ai_call(request: Request):
         body = await request.json()
     except Exception:
         body = {}
-    phone = (body.get("phone") or "").strip() or "13800138000"
+    phone = (body.get("phone") or "").strip() or "15021927073"
     from services.ai_phone import _normalize_phone, initiate_call
     phone = _normalize_phone(phone)
     result = await initiate_call(
@@ -604,7 +604,7 @@ async def admin_test_ai_call(request: Request):
         phone,
         "测试餐厅",
         "测试用户",
-        "+8613800000000",
+        "+8615021927073",
         datetime.utcnow(),
         2,
         0,

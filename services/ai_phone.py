@@ -15,26 +15,25 @@ log = logging.getLogger(__name__)
 
 def _build_system_prompt(restaurant_name: str, guest_name: str, guest_phone: str,
                          reservation_datetime: datetime, adults: int, children: int, notes: str) -> str:
-    dt_str = reservation_datetime.strftime("%Y年%m月%d日 %H時%M分")
-    people = f"{adults}名" + (f"、お子様{children}名" if children > 0 else "")
-    return f"""あなたは日本のレストランへの電話予約代行アシスタントです。
-必ず日本語で話してください。丁寧で自然な敬語を使い、店員と会話して予約を完了させてください。
+    dt_str = reservation_datetime.strftime("%Y年%m月%d日 %H:%M")
+    people = f"{adults}位大人" + (f"、{children}位小孩" if children > 0 else "")
+    return f"""你是一个餐厅电话预约代行助手。请全程使用中文与对方对话，语气礼貌、自然。
 
-【予約情報】
-- 店名: {restaurant_name}
-- 予約希望日時: {dt_str}
+【预约信息】
+- 餐厅: {restaurant_name}
+- 预约时间: {dt_str}
 - 人数: {people}
-- お客様名: {guest_name}
-- 連絡先: {guest_phone}
-{f'- 備考: {notes}' if notes else ''}
+- 预约人: {guest_name}
+- 联系电话: {guest_phone}
+{f'- 备注: {notes}' if notes else ''}
 
-【手順】
-1. 電話が取れたら「こんにちは、予約をお願いしたいのですが。」と挨拶する
-2. 上記の希望日時・人数・お客様名・連絡先を伝える
-3. 店員の確認や質問に応答する
-4. 予約が確定したら「ありがとうございます。よろしくお願いいたします。」と締めくくる
+【对话流程】
+1. 对方接听后说"您好，我想预约一下餐位"
+2. 告诉对方预约时间、人数、预约人姓名和联系电话
+3. 回答对方的确认问题
+4. 预约确认后说"好的，谢谢，到时候见"
 
-短く、簡潔に話してください。店員が話している間は遮らず、聞き取ってから応答してください。"""
+说话简短、清晰。对方说话时不要打断，听完再回答。"""
 
 
 async def initiate_call(order_no: str, restaurant_phone: str, restaurant_name: str,
@@ -66,7 +65,7 @@ async def _vapi_call(restaurant_phone: str, system_prompt: str, order_no: str) -
 
         payload = {
             "assistant": {
-                "firstMessage": "こんにちは、予約をお願いしたいのですが。",
+                "firstMessage": "您好，我想预约一下餐位。",
                 "model": {
                     "provider": "openai",
                     "model": "gpt-4o",
@@ -74,14 +73,14 @@ async def _vapi_call(restaurant_phone: str, system_prompt: str, order_no: str) -
                 },
                 "transcriber": {
                     "provider": "deepgram",
-                    "language": "ja",
+                    "language": "zh-CN",
                     "model": "nova-2",
                 },
                 "voice": {
                     "provider": "openai",
                     "voiceId": "alloy",
                 },
-                "endCallMessage": "ありがとうございます。失礼いたします。",
+                "endCallMessage": "好的，谢谢，再见。",
                 "maxDurationSeconds": 300,
                 "metadata": {"order_no": order_no},
             },

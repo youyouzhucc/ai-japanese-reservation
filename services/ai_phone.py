@@ -55,17 +55,25 @@ async def _simulate_call(order_no: str, restaurant_phone: str, script: str) -> d
 
 
 async def _twilio_call(restaurant_phone: str, script: str, order_no: str) -> dict:
-    """Twilio 真实通话（需配置 TwiML 服务器）"""
+    """Twilio 真实通话，接通后连接 Media Stream + OpenAI Realtime"""
     try:
         try:
             from twilio.rest import Client
         except ImportError:
             return {"call_sid": "", "status": "error", "error": "twilio 未安装，请 pip install twilio"}
+        base = (settings.app_base_url or "").strip()
+        if not base:
+            return {"call_sid": "", "status": "error", "error": "未配置 APP_BASE_URL 或 QIUFK_NOTIFY_URL"}
+        base = base.rstrip("/")
+        twiml_url = f"{base}/api/twiml/{order_no}"
+        status_callback = f"{base}/api/twilio/status"
         client = Client(settings.twilio_account_sid, settings.twilio_auth_token)
         call = client.calls.create(
             to=restaurant_phone,
             from_=settings.twilio_phone_number,
-            url=f"https://your-server.com/twiml/{order_no}",  # 需部署 TwiML 端点
+            url=twiml_url,
+            status_callback=status_callback,
+            status_callback_event=["initiated", "ringing", "answered", "completed"],
         )
         return {"call_sid": call.sid, "status": "initiated"}
     except Exception as e:

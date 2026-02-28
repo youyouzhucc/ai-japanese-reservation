@@ -26,6 +26,6 @@ alibabacloud-dysmsapi20170525>=3.0.0
 # 阿里云融合认证套餐包（号码认证服务）
 alibabacloud-dypnsapi20170525>=2.0.0
 
-# 可选：真实 AI 电话 & 短信
-# twilio==8.11.0
-# openai==1.12.0
+# 真实 AI 电话（Twilio + OpenAI Realtime）
+twilio>=8.11.0
+websockets>=12.0

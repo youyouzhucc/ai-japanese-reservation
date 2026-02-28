@@ -1,6 +1,8 @@
 """配置管理"""
 import os
 
+from urllib.parse import urlparse
+
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -35,6 +37,19 @@ class Settings(BaseSettings):
         if v.startswith("postgresql://") and "+asyncpg" not in v:
             return v.replace("postgresql://", "postgresql+asyncpg://", 1)
         return v
+
+    @field_validator("app_base_url", mode="before")
+    @classmethod
+    def resolve_app_base_url(cls, v: str) -> str:
+        """若未设置，从 QIUFK_NOTIFY_URL 推导"""
+        if v and str(v).strip():
+            return str(v).strip().rstrip("/")
+        notify = os.environ.get("QIUFK_NOTIFY_URL", "")
+        if notify:
+            p = urlparse(notify)
+            if p.scheme and p.netloc:
+                return f"{p.scheme}://{p.netloc}"
+        return ""
     payment_mode: str = "mock"
     # 支付宝当面付
     alipay_app_id: str = ""
@@ -53,6 +68,8 @@ class Settings(BaseSettings):
     twilio_auth_token: str = ""
     twilio_phone_number: str = ""
     openai_api_key: str = ""
+    # 公网访问地址，用于 Twilio TwiML/WebSocket（如 https://ai-japanese-reservation-production.up.railway.app）
+    app_base_url: str = ""
     # 餐厅搜索（可选，配置后优先使用，更稳定）
     google_places_api_key: str = ""
     foursquare_api_key: str = ""  # 推荐：每月 $200 免费额度，无需绑卡

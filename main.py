@@ -587,6 +587,30 @@ async def list_reservations(skip: int = 0, limit: int = 50, db=Depends(get_db), 
     return result.scalars().all()
 
 
+@app.post("/api/admin/test-ai-call")
+async def admin_test_ai_call(request: Request):
+    """调试：直接测试 Vapi 拨打电话，返回原始结果"""
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+    phone = (body.get("phone") or "").strip() or "13800138000"
+    from services.ai_phone import _normalize_phone, initiate_call
+    phone = _normalize_phone(phone)
+    result = await initiate_call(
+        "DEBUG_TEST",
+        phone,
+        "测试餐厅",
+        "测试用户",
+        "+8613800000000",
+        datetime.utcnow(),
+        2,
+        0,
+        "",
+    )
+    return {"phone_sent": phone, "result": result}
+
+
 @app.get("/api/admin/db-status")
 async def admin_db_status():
     """管理后台：数据库状态（用于排查数据丢失）"""

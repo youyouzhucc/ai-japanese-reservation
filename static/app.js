@@ -313,7 +313,10 @@ function initHeaderNavLinks() {
   });
 }
 
-function showLoginModal() {
+let _pendingFormSubmit = false;
+
+function showLoginModal(fromFormSubmit) {
+  _pendingFormSubmit = !!fromFormSubmit;
   const el = document.getElementById("loginModal");
   if (el) el.classList.remove("hidden");
 }
@@ -395,6 +398,10 @@ function initLoginModal() {
       updateAuthUI();
       phoneInput.value = "";
       codeInput.value = "";
+      if (_pendingFormSubmit) {
+        _pendingFormSubmit = false;
+        document.getElementById("reservationForm")?.requestSubmit();
+      }
     } catch (e) {
       alert(e.message || "登录失败");
     } finally {
@@ -430,7 +437,7 @@ if (document.readyState === "loading") {
 document.getElementById("reservationForm").addEventListener("submit", async (e) => {
   e.preventDefault();
   if (!getToken()) {
-    showLoginModal();
+    showLoginModal(true);
     return;
   }
   const btn = document.getElementById("submitBtn");

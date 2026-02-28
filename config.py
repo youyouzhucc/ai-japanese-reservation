@@ -68,7 +68,10 @@ class Settings(BaseSettings):
     twilio_auth_token: str = ""
     twilio_phone_number: str = ""
     openai_api_key: str = ""
-    # 公网访问地址，用于 Twilio TwiML/WebSocket（如 https://ai-japanese-reservation-production.up.railway.app）
+    # Vapi.ai - AI 电话一站式方案（替代 Twilio + OpenAI）
+    vapi_api_key: str = ""
+    vapi_phone_number_id: str = ""
+    # 公网访问地址，用于回调（如 https://ai-japanese-reservation-production.up.railway.app）
     app_base_url: str = ""
     # 餐厅搜索（可选，配置后优先使用，更稳定）
     google_places_api_key: str = ""

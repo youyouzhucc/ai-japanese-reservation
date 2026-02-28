@@ -121,15 +121,81 @@ async def auth_sms_status():
 @app.get("/api/ai-phone-status")
 async def ai_phone_status():
     """调试用：检查 AI 电话配置（不暴露密钥）"""
+    vapi_ok = bool(settings.vapi_api_key)
     twilio_ok = bool(settings.twilio_account_sid and settings.twilio_auth_token and settings.twilio_phone_number)
     openai_ok = bool(settings.openai_api_key)
     base_ok = bool(settings.app_base_url)
+    if vapi_ok:
+        mode = "vapi"
+        hint = "Vapi.ai 已配置" + ("（含电话号码）" if settings.vapi_phone_number_id else "（未配置电话号码ID，将使用 Vapi 免费号码）")
+    elif twilio_ok and openai_ok:
+        mode = "twilio+openai"
+        hint = "Twilio + OpenAI 已配置"
+    else:
+        mode = "mock"
+        hint = "模拟模式（未配置 VAPI_API_KEY 或 Twilio）"
     return {
+        "mode": mode,
+        "vapi_configured": vapi_ok,
+        "vapi_phone_number_id": bool(settings.vapi_phone_number_id),
         "twilio_configured": twilio_ok,
         "openai_configured": openai_ok,
-        "app_base_url": settings.app_base_url or "(未设置，将从 QIUFK_NOTIFY_URL 推导)",
-        "hint": "需同时配置 Twilio、OpenAI、APP_BASE_URL 才能真实拨打电话" if not (twilio_ok and openai_ok and base_ok) else "配置完整",
+        "app_base_url": settings.app_base_url or "(未设置)",
+        "hint": hint,
     }
+
+
+@app.post("/api/vapi/webhook")
+async def vapi_webhook(request: Request, db=Depends(get_db)):
+    """Vapi.ai 通话状态回调"""
+    from sqlalchemy import select
+    try:
+        data = await request.json()
+    except Exception:
+        return {"ok": True}
+    event_type = data.get("message", {}).get("type", "")
+    call_data = data.get("message", {}).get("call", {})
+    call_id = call_data.get("id", "")
+    metadata = call_data.get("assistant", {}).get("metadata", {}) or {}
+    order_no = metadata.get("order_no", "")
+
+    if not call_id and not order_no:
+        return {"ok": True}
+
+    log.info("[Vapi] webhook: event=%s, call_id=%s, order_no=%s", event_type, call_id, order_no)
+
+    if event_type == "end-of-call-report":
+        ended_reason = data.get("message", {}).get("endedReason", "")
+        transcript = data.get("message", {}).get("transcript", "")
+        summary = data.get("message", {}).get("summary", "")
+
+        if order_no:
+            result = await db.execute(select(Reservation).where(Reservation.order_no == order_no))
+        elif call_id:
+            result = await db.execute(select(Reservation).where(Reservation.ai_call_sid == call_id))
+        else:
+            return {"ok": True}
+        r = result.scalar_one_or_none()
+        if not r:
+            return {"ok": True}
+
+        call_result = summary or transcript or ended_reason
+        if ended_reason in ("assistant-ended-call", "customer-ended-call"):
+            r.status = ReservationStatus.SUCCESS.value
+            r.ai_call_result = f"AI 通话完成\n{call_result}" if call_result else "AI 通话完成"
+        else:
+            r.status = ReservationStatus.FAILED.value
+            r.ai_call_result = f"通话未完成: {ended_reason}\n{call_result}" if call_result else f"通话未完成: {ended_reason}"
+        await db.commit()
+        await db.refresh(r)
+
+        if r.status == ReservationStatus.SUCCESS.value:
+            await send_reservation_sms(
+                r.guest_phone, r.order_no, True,
+                r.restaurant_name, r.reservation_datetime,
+            )
+
+    return {"ok": True}
 
 
 @app.get("/api/payment-status")

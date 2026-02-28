@@ -345,6 +345,7 @@ async def _run_ai_call_and_notify(reservation_id: int):
             r = result.scalar_one_or_none()
             if not r:
                 return
+            log.info("[AI电话] 开始拨打 order_no=%s -> %s", r.order_no, r.restaurant_phone)
             call_result = await initiate_call(
                 r.order_no, r.restaurant_phone, r.restaurant_name,
                 r.guest_name, r.guest_phone, r.reservation_datetime,
@@ -352,6 +353,7 @@ async def _run_ai_call_and_notify(reservation_id: int):
             )
             r.ai_call_sid = call_result.get("call_sid", "")
             status = call_result.get("status", "")
+            log.info("[AI电话] 结果 order_no=%s status=%s call_sid=%s", r.order_no, status, r.ai_call_sid)
             # 仅真实通话返回结果时更新状态；模拟模式保持预约中
             if status == "simulated":
                 r.ai_call_result = "模拟模式：未实际拨打电话，状态保持预约中"

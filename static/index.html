@@ -61,11 +61,11 @@
         <div class="field">
           <div class="label-row"><label data-i18n="guestPhone">预约人电话</label><span class="required">*</span></div>
           <div class="row phone-row">
-            <div class="phone-input-group">
+            <div class="phone-input-group phone-prefix-group">
               <label for="guest_phone_prefix" data-i18n="areaCode">区号</label>
-              <input type="text" id="guest_phone_prefix" required placeholder="+86" maxlength="6">
+              <select id="guest_phone_prefix" required></select>
             </div>
-            <div class="phone-input-group">
+            <div class="phone-input-group phone-number-group">
               <label for="guest_phone_number" data-i18n="phoneNumber">号码</label>
               <input type="tel" id="guest_phone_number" required placeholder="138-0000-0000">
             </div>

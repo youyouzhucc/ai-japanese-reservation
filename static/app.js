@@ -142,9 +142,54 @@ function initRestaurantSearch() {
   });
 }
 
+const COUNTRY_CODES = [
+  { code: "+86", name: "中国", flag: "🇨🇳" },
+  { code: "+81", name: "日本", flag: "🇯🇵" },
+  { code: "+852", name: "中国香港", flag: "🇭🇰" },
+  { code: "+853", name: "中国澳门", flag: "🇲🇴" },
+  { code: "+886", name: "中国台湾", flag: "🇹🇼" },
+  { code: "+1", name: "美国/加拿大", flag: "🇺🇸" },
+  { code: "+44", name: "英国", flag: "🇬🇧" },
+  { code: "+82", name: "韩国", flag: "🇰🇷" },
+  { code: "+65", name: "新加坡", flag: "🇸🇬" },
+  { code: "+60", name: "马来西亚", flag: "🇲🇾" },
+  { code: "+66", name: "泰国", flag: "🇹🇭" },
+  { code: "+84", name: "越南", flag: "🇻🇳" },
+  { code: "+62", name: "印尼", flag: "🇮🇩" },
+  { code: "+63", name: "菲律宾", flag: "🇵🇭" },
+  { code: "+91", name: "印度", flag: "🇮🇳" },
+  { code: "+61", name: "澳大利亚", flag: "🇦🇺" },
+  { code: "+64", name: "新西兰", flag: "🇳🇿" },
+  { code: "+49", name: "德国", flag: "🇩🇪" },
+  { code: "+33", name: "法国", flag: "🇫🇷" },
+  { code: "+39", name: "意大利", flag: "🇮🇹" },
+  { code: "+34", name: "西班牙", flag: "🇪🇸" },
+  { code: "+351", name: "葡萄牙", flag: "🇵🇹" },
+  { code: "+31", name: "荷兰", flag: "🇳🇱" },
+  { code: "+46", name: "瑞典", flag: "🇸🇪" },
+  { code: "+41", name: "瑞士", flag: "🇨🇭" },
+  { code: "+7", name: "俄罗斯", flag: "🇷🇺" },
+  { code: "+971", name: "阿联酋", flag: "🇦🇪" },
+  { code: "+55", name: "巴西", flag: "🇧🇷" },
+  { code: "+52", name: "墨西哥", flag: "🇲🇽" },
+];
+
+function initPhonePrefixSelect() {
+  const sel = document.getElementById("guest_phone_prefix");
+  if (!sel) return;
+  COUNTRY_CODES.forEach((c) => {
+    const opt = document.createElement("option");
+    opt.value = c.code;
+    opt.textContent = `${c.flag} ${c.name} (${c.code})`;
+    if (c.code === "+86") opt.selected = true;
+    sel.appendChild(opt);
+  });
+}
+
 function initReservationForm() {
   applyI18n();
   initRestaurantSearch();
+  initPhonePrefixSelect();
   const dateInput = document.getElementById("reservation_date");
   const secondDateInput = document.getElementById("second_date");
   const today = new Date().toISOString().slice(0, 10);
@@ -456,9 +501,9 @@ document.getElementById("reservationForm").addEventListener("submit", async (e) 
   }
   const reservation_datetime = `${date} ${time}`;
 
-  const prefix = document.getElementById("guest_phone_prefix").value.trim();
+  const prefix = document.getElementById("guest_phone_prefix").value;
   const number = document.getElementById("guest_phone_number").value.trim().replace(/\D/g, "");
-  const guest_phone = (prefix.startsWith("+") ? prefix : prefix ? "+" + prefix : "+86") + number;
+  const guest_phone = prefix + number;
 
   const secondDate = document.getElementById("second_date")?.value || document.getElementById("second_date")?.dataset?.value || "";
   const secondHour = document.getElementById("second_hour")?.value || "";

@@ -159,11 +159,38 @@
       </div>
     </form>
 
-    <div id="result" class="result hidden">
-      <h3 data-i18n="orderTitle">预约单据</h3>
-      <div id="orderInfo"></div>
-      <p id="statusMsg"></p>
-      <button id="checkStatusBtn" class="secondary" data-i18n="refreshStatus">刷新状态</button>
+    <!-- 步骤2：预约确认页 -->
+    <div id="stepConfirm" class="step-page hidden">
+      <h3>确认预约信息</h3>
+      <div id="confirmInfo" class="confirm-card"></div>
+      <div class="step-actions">
+        <button type="button" id="confirmBackBtn" class="step-btn-secondary">← 返回修改</button>
+        <button type="button" id="confirmPayBtn" class="step-btn-primary">去支付（¥1）</button>
+      </div>
+    </div>
+
+    <!-- 步骤3：支付二维码页 -->
+    <div id="stepPayQr" class="step-page hidden">
+      <h3>扫码支付</h3>
+      <div id="payQrInfo" class="confirm-card"></div>
+      <div id="payQrArea" class="qr-area"></div>
+      <p id="payQrHint" class="step-hint">请使用支付宝扫码支付，支付完成后点击下方按钮</p>
+      <div class="step-actions">
+        <button type="button" id="payQrBackBtn" class="step-btn-secondary">← 返回预约</button>
+        <button type="button" id="payQrCheckBtn" class="step-btn-primary">我已支付，查看结果</button>
+      </div>
+    </div>
+
+    <!-- 步骤4：支付成功/预约中页 -->
+    <div id="stepSuccess" class="step-page hidden">
+      <div id="successIcon" class="success-icon">✅</div>
+      <h3 id="successTitle">预约提交成功</h3>
+      <p id="successMsg" class="step-hint"></p>
+      <div id="successInfo" class="confirm-card"></div>
+      <div class="step-actions">
+        <button type="button" id="successBackBtn" class="step-btn-primary">返回预约页面</button>
+        <button type="button" id="successRefreshBtn" class="step-btn-secondary hidden">刷新状态</button>
+      </div>
     </div>
   </div>
   </main>

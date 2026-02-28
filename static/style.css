@@ -545,6 +545,95 @@ button.secondary {
   border: 1px solid #dee2e6;
   color: #333;
 }
+/* ============ 步骤页面 ============ */
+.step-page {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-top: 1.5rem;
+  border: 1px solid #e9ecef;
+}
+.step-page.hidden { display: none; }
+.step-page h3 {
+  margin: 0 0 1.2rem;
+  font-size: 1.15rem;
+  color: #1a1a1a;
+  text-align: center;
+}
+.confirm-card {
+  background: #fff;
+  border-radius: 10px;
+  padding: 1rem 1.2rem;
+  border: 1px solid #dee2e6;
+  margin-bottom: 1.2rem;
+}
+.confirm-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 0.92rem;
+  color: #333;
+}
+.confirm-row:last-child { border-bottom: none; }
+.confirm-label {
+  color: #888;
+  flex-shrink: 0;
+  margin-right: 1rem;
+}
+.step-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+.step-btn-primary {
+  flex: 1;
+  padding: 0.8rem 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  background: #6c5ce7;
+  color: #fff;
+}
+.step-btn-primary:hover { opacity: 0.9; }
+.step-btn-secondary {
+  flex: 1;
+  padding: 0.8rem 1rem;
+  font-size: 1rem;
+  font-weight: 500;
+  border: 1px solid #dee2e6;
+  border-radius: 10px;
+  cursor: pointer;
+  background: #fff;
+  color: #495057;
+}
+.step-btn-secondary:hover { background: #f8f9fa; }
+.step-hint {
+  text-align: center;
+  color: #666;
+  font-size: 0.9rem;
+  margin: 0.8rem 0;
+  line-height: 1.5;
+}
+.qr-area {
+  text-align: center;
+  padding: 1rem 0;
+}
+.qr-area img {
+  display: inline-block;
+  border: 1px solid #ddd;
+  padding: 10px;
+  border-radius: 8px;
+  background: #fff;
+}
+.success-icon {
+  text-align: center;
+  font-size: 3rem;
+  margin-bottom: 0.5rem;
+}
+
 #statusMsg {
   color: #495057;
   font-size: 0.95rem;

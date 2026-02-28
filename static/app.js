@@ -66,7 +66,6 @@ function applyI18n() {
     if (ph) el.placeholder = t(ph);
   });
   document.getElementById("submitBtn").textContent = t("submit");
-  document.getElementById("checkStatusBtn").textContent = t("refreshStatus");
 }
 
 function initRestaurantSearch() {
@@ -479,6 +478,40 @@ if (document.readyState === "loading") {
   init();
 }
 
+// ============ 步骤页面切换 ============
+
+const STEP_IDS = ["reservationForm", "stepConfirm", "stepPayQr", "stepSuccess"];
+
+function showStep(stepId) {
+  STEP_IDS.forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle("hidden", id !== stepId);
+  });
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function escapeH(s) {
+  const d = document.createElement("div");
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+let _currentOrder = null;
+let _currentDatetime = "";
+
+function buildInfoHtml(order, datetime) {
+  return `
+    <div class="confirm-row"><span class="confirm-label">订单号</span><span>${escapeH(order.order_no)}</span></div>
+    <div class="confirm-row"><span class="confirm-label">餐厅</span><span>${escapeH(order.restaurant_name)}</span></div>
+    <div class="confirm-row"><span class="confirm-label">餐厅电话</span><span>${escapeH(order.restaurant_phone)}</span></div>
+    <div class="confirm-row"><span class="confirm-label">预约人</span><span>${escapeH(order.guest_name)}</span></div>
+    <div class="confirm-row"><span class="confirm-label">预约时间</span><span>${escapeH(datetime)}</span></div>
+    <div class="confirm-row"><span class="confirm-label">人数</span><span>${order.adults}成人${order.children ? " + " + order.children + "儿童" : ""}</span></div>
+    <div class="confirm-row"><span class="confirm-label">金额</span><span>¥1.00</span></div>
+  `;
+}
+
+// 表单提交 → 创建订单 → 显示确认页
 document.getElementById("reservationForm").addEventListener("submit", async (e) => {
   e.preventDefault();
   if (!getToken()) {
@@ -539,13 +572,10 @@ document.getElementById("reservationForm").addEventListener("submit", async (e) 
       throw new Error(err.detail || res.statusText);
     }
     const order = await res.json();
-    document.getElementById("result").classList.remove("hidden");
-    document.getElementById("orderInfo").textContent =
-      `订单号：${order.order_no}\n餐厅：${order.restaurant_name}\n预约时间：${reservation_datetime}\n状态：待支付\n金额：1元`;
-    document.getElementById("statusMsg").textContent = "请完成支付，支付成功后 AI 将自动致电餐厅完成预约";
-    document.getElementById("statusMsg").className = "status-reserving";
-    document.getElementById("checkStatusBtn").textContent = "去支付";
-    document.getElementById("checkStatusBtn").onclick = () => doPay(order, reservation_datetime);
+    _currentOrder = order;
+    _currentDatetime = reservation_datetime;
+    document.getElementById("confirmInfo").innerHTML = buildInfoHtml(order, reservation_datetime);
+    showStep("stepConfirm");
   } catch (err) {
     if (!err.authExpired) alert(err.message || "提交失败");
   } finally {
@@ -554,15 +584,20 @@ document.getElementById("reservationForm").addEventListener("submit", async (e) 
   }
 });
 
-async function doPay(order, reservationDatetime) {
-  const orderNo = order.order_no;
-  const btn = document.getElementById("checkStatusBtn");
+// 确认页 → 返回修改
+document.getElementById("confirmBackBtn").addEventListener("click", () => {
+  showStep("reservationForm");
+});
+
+// 确认页 → 支付
+document.getElementById("confirmPayBtn").addEventListener("click", async () => {
+  const btn = document.getElementById("confirmPayBtn");
   btn.disabled = true;
   btn.textContent = "支付中...";
   try {
     const res = await fetchWithAuth(`${API}/api/pay`, {
       method: "POST",
-      body: JSON.stringify({ order_no: orderNo, amount_cents: 100 }),
+      body: JSON.stringify({ order_no: _currentOrder.order_no, amount_cents: 100 }),
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
@@ -570,49 +605,93 @@ async function doPay(order, reservationDatetime) {
     }
     const payResult = await res.json();
     if (!payResult.success) throw new Error(payResult.message || "支付失败");
+
     if (payResult.qr_code) {
-      document.getElementById("orderInfo").innerHTML =
-        `订单号：${orderNo}<br>餐厅：${order.restaurant_name}<br>预约时间：${reservationDatetime}<br>金额：1元<br><br>` +
-        `<p style="margin:8px 0">请使用支付宝扫码支付：</p>` +
-        `<img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(payResult.qr_code)}" alt="支付二维码" style="display:block;margin:8px auto;border:1px solid #ddd;padding:8px">`;
-      document.getElementById("statusMsg").textContent = "扫码支付完成后，AI 将自动致电餐厅，请稍后刷新查看状态";
+      document.getElementById("payQrInfo").innerHTML = buildInfoHtml(_currentOrder, _currentDatetime);
+      document.getElementById("payQrArea").innerHTML =
+        `<img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(payResult.qr_code)}" alt="支付二维码">`;
+      document.getElementById("payQrHint").textContent = "请使用支付宝扫码支付，支付完成后点击下方按钮";
+      showStep("stepPayQr");
     } else {
-      document.getElementById("orderInfo").textContent =
-        `订单号：${orderNo}\n餐厅：${order.restaurant_name}\n预约时间：${reservationDatetime}\n状态：预约中`;
-      document.getElementById("statusMsg").textContent = t("statusReserving");
+      showSuccessPage("reserving");
     }
-    document.getElementById("statusMsg").className = "status-reserving";
-    btn.textContent = t("refreshStatus");
-    btn.disabled = false;
-    btn.onclick = () => checkStatus(orderNo);
   } catch (err) {
     if (!err.authExpired) alert(err.message || "支付失败");
+  } finally {
     btn.disabled = false;
-    btn.textContent = "去支付";
+    btn.textContent = "去支付（¥1）";
+  }
+});
+
+// 二维码页 → 返回预约
+document.getElementById("payQrBackBtn").addEventListener("click", () => {
+  showStep("reservationForm");
+});
+
+// 二维码页 → 查看支付结果
+document.getElementById("payQrCheckBtn").addEventListener("click", async () => {
+  const btn = document.getElementById("payQrCheckBtn");
+  btn.disabled = true;
+  btn.textContent = "查询中...";
+  try {
+    const res = await fetchWithAuth(`${API}/api/reservations/${_currentOrder.order_no}`);
+    if (!res.ok) throw new Error("查询失败");
+    const r = await res.json();
+    if (r.status === "pending") {
+      alert("尚未收到支付结果，请确认已完成支付后重试");
+    } else {
+      showSuccessPage(r.status, r);
+    }
+  } catch (err) {
+    if (!err.authExpired) alert(err.message || "查询失败");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "我已支付，查看结果";
+  }
+});
+
+function showSuccessPage(status, orderData) {
+  const STATUS_MAP = {
+    reserving: { icon: "📞", title: "支付成功，AI 正在致电餐厅", msg: "AI 将自动致电餐厅完成日语预约，请稍后在「我的预约」中查看结果" },
+    success: { icon: "✅", title: "预约成功", msg: "AI 已成功完成餐厅预约，祝用餐愉快！" },
+    failed: { icon: "❌", title: "预约失败", msg: orderData?.ai_call_result || "AI 电话未能成功预约，请稍后重试" },
+  };
+  const info = STATUS_MAP[status] || STATUS_MAP.reserving;
+  document.getElementById("successIcon").textContent = info.icon;
+  document.getElementById("successTitle").textContent = info.title;
+  document.getElementById("successMsg").textContent = info.msg;
+  document.getElementById("successInfo").innerHTML = buildInfoHtml(orderData || _currentOrder, _currentDatetime);
+
+  const refreshBtn = document.getElementById("successRefreshBtn");
+  if (status === "reserving") {
+    refreshBtn.classList.remove("hidden");
+    refreshBtn.onclick = () => refreshSuccessStatus();
+  } else {
+    refreshBtn.classList.add("hidden");
+  }
+  showStep("stepSuccess");
+}
+
+async function refreshSuccessStatus() {
+  const btn = document.getElementById("successRefreshBtn");
+  btn.disabled = true;
+  btn.textContent = "刷新中...";
+  try {
+    const res = await fetchWithAuth(`${API}/api/reservations/${_currentOrder.order_no}`);
+    if (!res.ok) throw new Error("查询失败");
+    const r = await res.json();
+    showSuccessPage(r.status, r);
+  } catch (err) {
+    if (!err.authExpired) alert(err.message || "刷新失败");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "刷新状态";
   }
 }
 
-async function checkStatus(orderNo) {
-  try {
-    const res = await fetchWithAuth(`${API}/api/reservations/${orderNo}`);
-    if (!res.ok) throw new Error("查询失败");
-    const r = await res.json();
-    const dt = new Date(r.reservation_datetime).toLocaleString("zh-CN");
-    const statusText = { success: "预约成功", failed: "预约失败", reserving: "预约中", pending: "待支付", cancelled: "已取消" }[r.status] || r.status;
-    document.getElementById("orderInfo").textContent =
-      `订单号：${r.order_no}\n餐厅：${r.restaurant_name}\n预约时间：${dt}\n状态：${statusText}`;
-    const msg = document.getElementById("statusMsg");
-    if (r.status === "success") {
-      msg.textContent = t("statusSuccess");
-      msg.className = "status-success";
-    } else if (r.status === "failed") {
-      msg.textContent = t("statusFailed") + (r.ai_call_result || "请稍后重试");
-      msg.className = "status-failed";
-    } else {
-      msg.textContent = t("statusReserving");
-      msg.className = "status-reserving";
-    }
-  } catch (e) {
-    if (!e.authExpired) alert(e.message);
-  }
-}
+// 成功页 → 返回预约
+document.getElementById("successBackBtn").addEventListener("click", () => {
+  _currentOrder = null;
+  _currentDatetime = "";
+  showStep("reservationForm");
+});

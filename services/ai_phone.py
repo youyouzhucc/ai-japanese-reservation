@@ -57,9 +57,26 @@ async def _simulate_call(order_no: str, restaurant_phone: str, script: str) -> d
     return {"call_sid": f"sim_{order_no}", "status": "simulated", "script": script.strip()}
 
 
+def _normalize_phone(phone: str) -> str:
+    """规范为 E.164 格式，便于 Vapi/Telnyx 拨打"""
+    s = (phone or "").strip().replace(" ", "").replace("-", "")
+    if not s:
+        return phone
+    if s.startswith("+"):
+        return s
+    # 中国 11 位手机号
+    if len(s) == 11 and s.startswith("1"):
+        return "+86" + s
+    # 已含区号如 8613812345678
+    if len(s) >= 12 and s.startswith("86"):
+        return "+" + s
+    return s
+
+
 async def _vapi_call(restaurant_phone: str, system_prompt: str, order_no: str) -> dict:
     """通过 Vapi.ai 发起 AI 电话"""
     try:
+        restaurant_phone = _normalize_phone(restaurant_phone)
         base_url = (settings.app_base_url or "").strip().rstrip("/")
         server_url = f"{base_url}/api/vapi/webhook" if base_url else None
 

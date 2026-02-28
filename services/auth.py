@@ -1,4 +1,4 @@
-"""认证服务：验证码存储、JWT 签发"""
+"""认证服务：验证码存储、JWT 签发、昵称生成"""
 import random
 import string
 import time
@@ -6,6 +6,25 @@ from datetime import datetime, timedelta
 from typing import Optional
 
 from config import settings
+
+_ADJECTIVES = [
+    "快乐的", "勇敢的", "安静的", "闪亮的", "温柔的", "神秘的", "飞翔的", "幸运的",
+    "机智的", "优雅的", "活泼的", "冷静的", "阳光的", "甜蜜的", "潇洒的", "慵懒的",
+    "元气的", "迷你的", "暗夜的", "星空下的", "海边的", "森林里的", "云端的", "深海的",
+]
+
+_NOUNS = [
+    "小猫", "企鹅", "柴犬", "水獭", "熊猫", "考拉", "兔子", "刺猬",
+    "海豚", "狐狸", "鹦鹉", "松鼠", "浣熊", "树袋熊", "猫头鹰", "小鹿",
+    "仓鼠", "海龟", "白鲸", "火烈鸟", "独角兽", "小龙虾", "河豚", "北极熊",
+]
+
+
+def generate_nickname() -> str:
+    adj = random.choice(_ADJECTIVES)
+    noun = random.choice(_NOUNS)
+    num = random.randint(10, 99)
+    return f"{adj}{noun}{num}"
 
 # 内存存储：phone -> (code, expires_at)，生产环境可换 Redis
 _verify_codes: dict[str, tuple[str, float]] = {}

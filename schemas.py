@@ -19,6 +19,7 @@ class AuthResponse(BaseModel):
     token: str
     user_id: int
     phone: str
+    nickname: str = ""
 
 
 class ReservationCreate(BaseModel):
@@ -87,6 +88,7 @@ class UserResponse(BaseModel):
     """注册用户响应"""
     id: int
     phone: str
+    nickname: str = ""
     created_at: datetime
 
     class Config:

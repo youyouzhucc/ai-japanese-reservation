@@ -14,6 +14,7 @@ class User(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     phone = Column(String(50), unique=True, nullable=False, index=True)
+    nickname = Column(String(50), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
@@ -76,3 +77,11 @@ def get_session_maker(engine):
 async def init_db(engine):
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        # 给已有的 users 表补 nickname 列（create_all 不会修改已有表）
+        from sqlalchemy import text, inspect
+        def _add_nickname_if_missing(sync_conn):
+            insp = inspect(sync_conn)
+            cols = [c["name"] for c in insp.get_columns("users")]
+            if "nickname" not in cols:
+                sync_conn.execute(text("ALTER TABLE users ADD COLUMN nickname VARCHAR(50)"))
+        await conn.run_sync(_add_nickname_if_missing)

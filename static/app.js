@@ -295,7 +295,9 @@ function initReservationForm() {
 }
 
 function updateAuthUI() {
-  // 我的账号、我的预约始终显示；未登录时点击会弹出登录
+  const nick = localStorage.getItem("reservation_nickname");
+  const el = document.getElementById("navNickname");
+  if (el && nick) el.textContent = nick;
 }
 
 function initHeaderNavLinks() {
@@ -388,6 +390,7 @@ function initLoginModal() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.detail || res.statusText || "登录失败");
       setToken(data.token);
+      if (data.nickname) localStorage.setItem("reservation_nickname", data.nickname);
       hideLoginModal();
       updateAuthUI();
       phoneInput.value = "";

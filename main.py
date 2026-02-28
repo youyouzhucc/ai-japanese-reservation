@@ -8,7 +8,7 @@ import uuid
 from datetime import datetime
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, HTTPException, Depends, Request, Header
+from fastapi import FastAPI, HTTPException, Depends, Request, Header, WebSocket, WebSocketDisconnect
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, PlainTextResponse
 
@@ -35,9 +35,10 @@ from schemas import (
     CallbackRequest, ReservationStatusUpdate, UserResponse,
 )
 from services import create_payment, initiate_call, send_reservation_sms
+from services.ai_voice_stream import handle_media_stream
 from services.restaurant_search import search_restaurants
 from services.payment import verify_alipay_notify, verify_qiufk_notify
-from services.auth import store_verification_code, verify_code, create_token, decode_token
+from services.auth import store_verification_code, verify_code, create_token, decode_token, generate_nickname
 from services.sms import send_verification_code
 
 engine = get_engine(settings.database_url)
@@ -117,6 +118,20 @@ async def auth_sms_status():
     }
 
 
+@app.get("/api/ai-phone-status")
+async def ai_phone_status():
+    """调试用：检查 AI 电话配置（不暴露密钥）"""
+    twilio_ok = bool(settings.twilio_account_sid and settings.twilio_auth_token and settings.twilio_phone_number)
+    openai_ok = bool(settings.openai_api_key)
+    base_ok = bool(settings.app_base_url)
+    return {
+        "twilio_configured": twilio_ok,
+        "openai_configured": openai_ok,
+        "app_base_url": settings.app_base_url or "(未设置，将从 QIUFK_NOTIFY_URL 推导)",
+        "hint": "需同时配置 Twilio、OpenAI、APP_BASE_URL 才能真实拨打电话" if not (twilio_ok and openai_ok and base_ok) else "配置完整",
+    }
+
+
 @app.get("/api/payment-status")
 async def payment_status():
     """调试用：检查支付配置（不暴露密钥）"""
@@ -169,18 +184,22 @@ async def auth_verify(data: AuthVerifyRequest, db=Depends(get_db)):
     result = await db.execute(select(User).where(User.phone == phone))
     user = result.scalar_one_or_none()
     if not user:
-        user = User(phone=phone)
+        user = User(phone=phone, nickname=generate_nickname())
         db.add(user)
         await db.commit()
         await db.refresh(user)
+    elif not user.nickname:
+        user.nickname = generate_nickname()
+        await db.commit()
+        await db.refresh(user)
     token = create_token(user.id, user.phone)
-    return AuthResponse(token=token, user_id=user.id, phone=user.phone)
+    return AuthResponse(token=token, user_id=user.id, phone=user.phone, nickname=user.nickname or "")
 
 
 @app.get("/api/auth/me")
 async def auth_me(user: User = Depends(get_current_user)):
     """获取当前登录用户"""
-    return {"user_id": user.id, "phone": user.phone}
+    return {"user_id": user.id, "phone": user.phone, "nickname": user.nickname or ""}
 
 
 # ============ 预约 API ============
@@ -350,6 +369,99 @@ async def qiufk_notify(request: Request, db=Depends(get_db)):
     await db.commit()
     asyncio.create_task(_run_ai_call_and_notify(r.id))
     return PlainTextResponse("success")
+
+
+# ============ Twilio AI 电话 ============
+
+@app.get("/api/twiml/{order_no}")
+async def twiml_for_call(order_no: str, request: Request, db=Depends(get_db)):
+    """Twilio 接通餐厅后请求此 URL，返回 TwiML 连接 Media Stream"""
+    from twilio.twiml.voice_response import VoiceResponse, Connect, Stream
+    from sqlalchemy import select
+
+    result = await db.execute(select(Reservation).where(Reservation.order_no == order_no))
+    r = result.scalar_one_or_none()
+    if not r:
+        return PlainTextResponse("Order not found", status_code=404)
+
+    base = (settings.app_base_url or "").strip()
+    if not base:
+        # 从 request 推导
+        base = str(request.url).replace(request.url.path, "").rstrip("/")
+    if base.startswith("http://"):
+        base = "wss://" + base[7:]
+    elif base.startswith("https://"):
+        base = "wss://" + base[8:]
+    elif base and not base.startswith("wss://"):
+        base = "wss://" + base
+
+    stream_url = f"{base}/media-stream?order_no={order_no}"
+    response = VoiceResponse()
+    connect = Connect()
+    connect.stream(url=stream_url)
+    response.append(connect)
+    return PlainTextResponse(str(response), media_type="application/xml")
+
+
+@app.websocket("/media-stream")
+async def media_stream_ws(websocket: WebSocket):
+    """Twilio Media Stream WebSocket，桥接 OpenAI Realtime API"""
+    order_no = websocket.query_params.get("order_no", "")
+    if not order_no:
+        await websocket.close()
+        return
+
+    async def get_reservation(ono: str):
+        from sqlalchemy import select
+        async with SessionLocal() as sess:
+            result = await sess.execute(select(Reservation).where(Reservation.order_no == ono))
+            return result.scalar_one_or_none()
+
+    try:
+        await handle_media_stream(websocket, order_no, get_reservation)
+    except WebSocketDisconnect:
+        log.info("[AI] WebSocket disconnected: order_no=%s", order_no)
+
+
+@app.api_route("/api/twilio/status", methods=["GET", "POST"])
+async def twilio_status_callback(request: Request, db=Depends(get_db)):
+    """Twilio 通话状态回调（completed/busy/failed/no-answer 等）"""
+    from sqlalchemy import select
+
+    if request.method == "GET":
+        data = dict(request.query_params)
+    else:
+        body = await request.body()
+        from urllib.parse import parse_qs
+        data = {k: v[0] if isinstance(v, list) else v for k, v in parse_qs(body.decode()).items()}
+
+    call_sid = data.get("CallSid", "")
+    call_status = data.get("CallStatus", "")
+    if not call_sid:
+        return PlainTextResponse("OK")
+
+    result = await db.execute(select(Reservation).where(Reservation.ai_call_sid == call_sid))
+    r = result.scalar_one_or_none()
+    if not r:
+        return PlainTextResponse("OK")
+
+    if call_status == "completed":
+        r.status = ReservationStatus.SUCCESS.value
+        r.ai_call_result = "AI 通话完成，预约成功"
+        await db.commit()
+        await db.refresh(r)
+        # 发送成功短信
+        await send_reservation_sms(
+            r.guest_phone, r.order_no, True,
+            r.restaurant_name, r.reservation_datetime,
+        )
+    elif call_status in ("busy", "failed", "no-answer", "canceled"):
+        r.status = ReservationStatus.FAILED.value
+        r.ai_call_result = f"通话未接通: {call_status}"
+        await db.commit()
+    else:
+        await db.commit()
+    return PlainTextResponse("OK")
 
 
 @app.post("/api/callback/call")

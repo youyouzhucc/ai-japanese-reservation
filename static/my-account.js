@@ -48,6 +48,9 @@ function loadAccount() {
     .then((d) => {
       if (d && d.phone) {
         document.getElementById("phoneDisplay").textContent = maskPhone(d.phone);
+        if (d.nickname) {
+          document.getElementById("nicknameDisplay").textContent = d.nickname;
+        }
       } else {
         redirectToLogin();
       }
@@ -57,6 +60,7 @@ function loadAccount() {
 
 document.getElementById("logoutBtn").addEventListener("click", () => {
   clearToken();
+  localStorage.removeItem("reservation_nickname");
   redirectToLogin();
 });
 

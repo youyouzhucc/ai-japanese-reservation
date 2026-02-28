@@ -137,7 +137,7 @@ async def ai_phone_status():
     return {
         "mode": mode,
         "vapi_configured": vapi_ok,
-        "vapi_phone_number_id": bool(settings.vapi_phone_number_id),
+        "vapi_phone_number_id": settings.vapi_phone_number_id[:8] + "..." if settings.vapi_phone_number_id else "",
         "twilio_configured": twilio_ok,
         "openai_configured": openai_ok,
         "app_base_url": settings.app_base_url or "(未设置)",

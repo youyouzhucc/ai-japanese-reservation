@@ -290,7 +290,7 @@ async def create_reservation(data: ReservationCreate, db=Depends(get_db), user: 
         children=data.children,
         notes=data.notes,
         status=ReservationStatus.PENDING.value,
-        amount_cents=100,
+        amount_cents=1,
     )
     db.add(r)
     await db.commit()
@@ -312,14 +312,14 @@ async def pay(req: PaymentRequest, db=Depends(get_db), user: User = Depends(get_
         raise HTTPException(400, f"订单状态不可支付: {r.status}")
 
     subject = f"AI日语预约-{r.restaurant_name}"
-    pay_result = await create_payment(req.order_no, req.amount_cents or 100, subject)
+    pay_result = await create_payment(req.order_no, req.amount_cents or 1, subject)
     if not pay_result["success"]:
         msg = pay_result["message"]
         log.warning("[支付] 创建失败: order_no=%s, mode=%s, msg=%s", req.order_no, settings.payment_mode, msg)
         raise HTTPException(400, msg)
 
     r.payment_id = pay_result["payment_id"]
-    r.amount_cents = req.amount_cents or 100
+    r.amount_cents = req.amount_cents or 1
     await db.commit()
 
     # 模拟模式：直接触发 AI 电话；支付宝：等 /api/alipay/notify 回调
